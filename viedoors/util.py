@@ -1,4 +1,8 @@
-import pandas 
+"""
+Coding Utilities
+Author: Michael Kohlegger
+Date: Jan. 2025
+"""
 
 
 EG_LABEL = "00"
@@ -7,14 +11,14 @@ ZG_PREFIX = "Z"
 K_PREFIX = "K"
 
 LEVEL_DICTIONARY = {
-    
+
     # Cellar
     "K":   K_PREFIX+"1",
     "K1": K_PREFIX+"1",
     "-1":  K_PREFIX+"1",
     "-2":  K_PREFIX+"2",
-    
-    
+
+
     # Ground floor
     "0":   EG_LABEL,
     "00":  EG_LABEL,
@@ -78,6 +82,12 @@ LEVEL_DICTIONARY = {
 }
 
 def level_mapper(level):
+    """Mapper function for pandas.map() that deals with floor values.
+
+    :param level: Input value of level.
+    :type level: str
+    """
+
     if not isinstance(level, str):
         raise TypeError(f"level must be string but was {type(level)}.")
     level = level.replace(" ", "")
@@ -87,18 +97,36 @@ def level_mapper(level):
 
 
 def door_mapper(door):
+    """Mapper function for pandas.map() that deals with door values.
+
+    :param door: Input value of door.
+    :type door: str
+    """
+
     if not isinstance(door, str):
         raise TypeError(f"door must be string but was {type(door)}.")
     return f"{door:>02}"
 
+
 def room_mapper(room):
+    """Mapper function for pandas.map() that deals with room values.
+
+    :param door: Input value of room.
+    :type door: str
+    """
+
     if not isinstance(room, str):
         raise TypeError(f"room must be string but was {type(room)}.")
     return f"{room:>04}"
 
 
 def clean_data(df):
-    
+    """Function that cleans columns of a pandas.DataFrame.
+
+    :param df: DataFrame with values.
+    :type door: pandas.DataFrame
+    """
+
     d = df.dropna(axis=1, how="all")
     new_columns = []
     for col in d.columns:
@@ -110,5 +138,10 @@ def clean_data(df):
     return d
 
 
-def flt_object_mapper(x):
+def object_mapper(x):
+    """Mapper function for pandas.map() that deals with object values.
+
+    :param x: Input value of object.
+    :type x: str
+    """
     return x.split("_")[0]
