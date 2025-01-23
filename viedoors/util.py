@@ -129,10 +129,20 @@ def clean_data(df):
 
     d = df.dropna(axis=1, how="all")
     new_columns = []
+    replace_chars = ",.;:!§$%&/)=?+*#'}]"
     for col in d.columns:
-        col = col.lower().replace(" ", "_").replace(".", " ").replace("ü", "ue")
-        col = col.replace("ä", "ae").replace("ö", "oe").replace("ß", "ss")
-        col = col.replace(":", "").replace("?", "").replace("!", "").replace("#", "")
+        col = col.lower()
+        for char in replace_chars:
+            col = col.replace(char, "")
+        col = col.replace("ü", "ue")
+        col = col.replace("ä", "ae")
+        col = col.replace("ö", "oe")
+        col = col.replace("ß", "ss")
+        col = col.replace(" ", "_")
+        col = col.replace("-", "_")
+        col = col.replace("(", "_")
+        col = col.replace("[", "_")
+        col = col.replace("{", "_")
         new_columns.append(col)
     d.columns = new_columns
     return d
@@ -144,4 +154,23 @@ def object_mapper(x):
     :param x: Input value of object.
     :type x: str
     """
+
     return x.split("_")[0]
+
+def columns_expander(columns, delta, prefix="dummy_"):
+    """Expands a column list with dummy columns.
+
+    :param  columns: Base columns list that should be expanded.
+    :type columns: list
+    :param delta: Number of additional columns that should be added.
+    :type delta: int
+    :param prefix: Prefix that should be added to column number.
+    :type prefix: str
+    :return: New list of columns
+    :rtype: list
+    """
+
+    assert isinstance(prefix, str), f"prefix must be str but was {type(prefix)}."
+    assert isinstance(delta, int), f"delta must be int but was {type(delta)}."
+    assert isinstance(columns, list), f"cols must be a list object but was {type(columns)}."
+    return columns + [prefix+str(i) for i in range(1, delta+1)]
