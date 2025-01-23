@@ -14,18 +14,15 @@ class ExcelLoader:
 
     """Loads excel files as is from a source file into memory.
 
-    :param file_name: The name of the file including file extension
-    :type file_name: str
-    :param file_path: The path where the data file is located
-    :type file_path: str
+    :param file: The name of the file including file extension
+    :type filee: str
     :param title: A string that describes the columns of the DataFrame
     :type title: str
     """
 
-    def __init__(self, file_name, file_path, title, *args, **kwargs):
+    def __init__(self, file, title, *args, **kwargs):
 
-        self.file_name = file_name
-        self.file_path = file_path
+        self.file = file
         self.title = title
         self.data = None
 
@@ -41,7 +38,7 @@ class ExcelLoader:
         """
 
         self.data = read_excel(
-            io=join(self.file_path, self.file_name),
+            io=self.file,
             dtype=object,
             *args,
             **kwargs
@@ -49,9 +46,6 @@ class ExcelLoader:
 
         n_col = len(self.data.columns)
         n_row = len(self.data)
-
-        print(f"Loading of file '{self.file_name}' completed.")
-        print(f"Data has {n_col} columns an {n_row} rows.")
 
 
     def __clean_data(self):

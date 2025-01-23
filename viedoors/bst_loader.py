@@ -18,16 +18,14 @@ class BSTLoader(ExcelLoader):
     contains more columns, the loader will expand the column list with
     dummy columns.
 
-    :param file_name: The name of the file including file extension
-    :type file_name: str
-    :param file_path: The path where the data file is located
-    :type file_path: str
+    :param file: The name of the file including file extension
+    :type filee: str
     :param title: A string that describes the columns of the DataFrame
     :type title: str
     """
 
-    def __init__(self, file_name, file_path, title, *args, **kwargs):
-        super().__init__(file_name, file_path, title, *args, **kwargs)
+    def __init__(self, file, title, *args, **kwargs):
+        super().__init__(file, title, *args, **kwargs)
 
         n_cols = len(self.data.columns)
         n_labels = len(bst_columns)

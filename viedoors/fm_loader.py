@@ -26,8 +26,8 @@ class FMLoader(ExcelLoader):
     :type title: str
     """
 
-    def __init__(self, file_name, file_path, title, *args, **kwargs):
-        super().__init__(file_name, file_path, title, *args, **kwargs)
+    def __init__(self, file, title, *args, **kwargs):
+        super().__init__(file, title, *args, **kwargs)
 
         n_cols = len(self.data.columns)
         n_labels = len(fm_columns)
