@@ -12,7 +12,15 @@ from .util import clean_data
 
 class ExcelLoader:
 
-    """Loads excel files as is from a source file into memory."""
+    """Loads excel files as is from a source file into memory.
+
+    :param file_name: The name of the file including file extension
+    :type file_name: str
+    :param file_path: The path where the data file is located
+    :type file_path: str
+    :param title: A string that describes the columns of the DataFrame
+    :type title: str
+    """
 
     def __init__(self, file_name, file_path, title, *args, **kwargs):
 
@@ -21,8 +29,7 @@ class ExcelLoader:
         self.title = title
         self.data = None
 
-        self.__load_data()
-        self.__clean_data()
+        self.__load_data(*args, **kwargs)
 
 
     def __load_data(self, *args, **kwargs):
@@ -34,8 +41,10 @@ class ExcelLoader:
         """
 
         self.data = read_excel(
-            io=join(self.file_path, self.file_name, *args, **kwargs),
-            dtype=object
+            io=join(self.file_path, self.file_name),
+            dtype=object,
+            *args,
+            **kwargs
         )
 
         n_col = len(self.data.columns)
