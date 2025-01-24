@@ -62,7 +62,7 @@ class FileMerger:
                 total = len(file)
         successful = len(self.data_merge)
 
-        return successful / total, total, successful
+        return successful / total
 
 
     def export_merge(self, file="dummy.xlsx"):
