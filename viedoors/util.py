@@ -93,6 +93,8 @@ def level_mapper(level):
     level = level.replace(" ", "")
     if level in LEVEL_DICTIONARY.keys():
         return LEVEL_DICTIONARY[level]
+    if level is None:
+        return None
     return "##"
 
 
@@ -105,6 +107,8 @@ def door_mapper(door):
 
     if not isinstance(door, str):
         raise TypeError(f"door must be string but was {type(door)}.")
+    if door is None:
+        return None
     return f"{door:>02}"
 
 
@@ -117,6 +121,8 @@ def room_mapper(room):
 
     if not isinstance(room, str):
         raise TypeError(f"room must be string but was {type(room)}.")
+    if room is None:
+        return None
     return f"{room:>04}"
 
 
@@ -154,7 +160,8 @@ def object_mapper(x):
     :param x: Input value of object.
     :type x: str
     """
-
+    if x is None:
+        return None
     return x.split("_")[0]
 
 def columns_expander(columns, delta, prefix="dummy_"):
