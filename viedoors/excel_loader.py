@@ -46,8 +46,9 @@ class ExcelLoader:
             **kwargs
         )
 
-        n_col = len(self.data.columns)
-        n_row = len(self.data)
+        # Automatically deal with empty lines (they occur from time to time)
+        # having no values at all. These get deleted after loading
+        self.data.dropna(axis=0, how="all", inplace=True)
 
 
     def __clean_data(self):
