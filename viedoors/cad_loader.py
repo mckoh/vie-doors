@@ -48,5 +48,6 @@ class CADLoader(ExcelLoader):
         # Prepare the AKS-Number
         self.data["integration_aks"] = self.data["gar_tuernummer_bauteil"] + " " + \
             self.data["gar_tuernummer_ebene"] + \
+            self.data["gar_tuernummer_modul"] + \
             self.data["gar_tuernummer_aks_nr"] + "." + \
             self.data["gar_tuernummer_nummer"]
