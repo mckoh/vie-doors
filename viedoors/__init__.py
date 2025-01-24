@@ -5,10 +5,10 @@ Date: Jan. 2025
 """
 
 
-from .bst_loader import BSTLoader
-from .cad_loader import CADLoader
-from .flt_loader import FLTLoader
-from .npa_loader import NPALoader
-from .hm_loader import HMLoader
-from .fm_loader import FMLoader
-from .file_merger import FileMerger
+from .loader.bst_loader import BSTLoader
+from .loader.cad_loader import CADLoader
+from .loader.flt_loader import FLTLoader
+from .loader.npa_loader import NPALoader
+from .loader.hm_loader import HMLoader
+from .loader.fm_loader import FMLoader
+from .merger.file_merger import FileMerger
