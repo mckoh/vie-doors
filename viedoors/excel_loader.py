@@ -33,8 +33,10 @@ class ExcelLoader:
         """Loads the specified file as DataFrame (only internal use).
 
         Data are read in as is. By specifying object as dtype,
-        type inferencing is deactivated in pandas and all columns
-        are treated as string columns
+        type inference is deactivated in pandas and all columns
+        are treated as string columns.
+
+        The method can be adjusted using pandas keyword arguments.
         """
 
         self.data = read_excel(
