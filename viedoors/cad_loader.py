@@ -7,6 +7,7 @@ Date: Jan. 2025
 from .excel_loader import ExcelLoader
 from .columns import cad_columns
 from .util import columns_expander
+from .util import door_mapper, level_mapper, room_mapper, object_mapper
 
 
 class CADLoader(ExcelLoader):
@@ -17,6 +18,9 @@ class CADLoader(ExcelLoader):
     with homogenized column names. If the Excel file unintendedly
     contains more columns, the loader will expand the column list with
     dummy columns.
+
+    The class prepares all necessary columns and concatenates them into a new
+    column 'integration_aks' that can be used for joining.
 
     :param file_name: The name of the file including file extension
     :type file_name: str
@@ -34,3 +38,15 @@ class CADLoader(ExcelLoader):
         delta = n_cols - n_labels
 
         self.data.columns = columns_expander(cad_columns, delta)
+
+        # Prepare the parts for AKS
+        self.data["gar_tuernummer_bauteil"] = self.data["gar_tuernummer_bauteil"].map(object_mapper)
+        self.data["gar_tuernummer_ebene"] = self.data["gar_tuernummer_ebene"].map(level_mapper)
+        self.data["gar_tuernummer_nummer"] = self.data["gar_tuernummer_nummer"].map(door_mapper)
+        self.data["gar_tuernummer_aks_nr"] = self.data["gar_tuernummer_aks_nr"].map(room_mapper)
+
+        # Prepare the AKS-Number
+        self.data["integration_aks"] = self.data["gar_tuernummer_bauteil"] + " " + \
+            self.data["gar_tuernummer_ebene"] + \
+            self.data["gar_tuernummer_aks_nr"] + "." + \
+            self.data["gar_tuernummer_nummer"]
