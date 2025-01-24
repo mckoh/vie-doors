@@ -87,14 +87,13 @@ def level_mapper(level):
     :param level: Input value of level.
     :type level: str
     """
-
+    if level is None:
+        return None
     if not isinstance(level, str):
         raise TypeError(f"level must be string but was {type(level)}.")
     level = level.replace(" ", "")
     if level in LEVEL_DICTIONARY.keys():
         return LEVEL_DICTIONARY[level]
-    if level is None:
-        return None
     return "##"
 
 
@@ -104,11 +103,10 @@ def door_mapper(door):
     :param door: Input value of door.
     :type door: str
     """
-
-    if not isinstance(door, str):
-        raise TypeError(f"door must be string but was {type(door)}.")
     if door is None:
         return None
+    if not isinstance(door, str):
+        raise TypeError(f"door must be string but was {type(door)}.")
     return f"{door:>02}"
 
 
@@ -118,11 +116,10 @@ def room_mapper(room):
     :param door: Input value of room.
     :type door: str
     """
-
-    if not isinstance(room, str):
-        raise TypeError(f"room must be string but was {type(room)}.")
     if room is None:
         return None
+    if not isinstance(room, str):
+        raise TypeError(f"room must be string but was {type(room)}.")
     return f"{room:>04}"
 
 
