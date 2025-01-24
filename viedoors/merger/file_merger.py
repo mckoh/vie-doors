@@ -14,9 +14,12 @@ class FileMerger:
 
     :param files: A list of pandas.DataFrames.
     :type files: list
+    :param how: Joining strategy (inner, outer, left, right)
+    :type how: str
+    :default how: "left"
     """
 
-    def __init__(self, files, how):
+    def __init__(self, files, how="left"):
         assert len(files) > 1, f"Number of files must be at least 2 but was {len(files)}."
         self.files = files
         self.data_merge = files[0]
