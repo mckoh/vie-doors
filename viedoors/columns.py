@@ -89,7 +89,6 @@ npa_columns = [
 ]
 
 cad_columns = [
-    "name",
     "gar_tuernummer_bauteil",
     "gar_tuernummer_ebene",
     "gar_tuernummer_modul",
@@ -100,6 +99,7 @@ cad_columns = [
     "gar_tuer_breite",
     "gar_tuer_hoehe",
     "gar_bsk",
+    "gar_brandabschnitt_bildend",
     "gar_hel",
     "gar_sec",
     "gar_zusatz"
