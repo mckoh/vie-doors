@@ -69,8 +69,12 @@ class ExcelLoader:
         if prefixed:
             df = self.data.copy()
             df.columns = [self.title+"___"+c for c in self.data.columns]
-            return df
-        return self.data
+            df["merge"] = df[self.title+"___"+"integration_aks"]
+        else:
+            df = self.data.copy()
+            df["merge"] = df["integration_aks"]
+
+        return df
 
 
     def get_columns(self):
