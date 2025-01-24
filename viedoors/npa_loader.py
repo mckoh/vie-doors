@@ -7,6 +7,7 @@ Date: Jan. 2025
 from .excel_loader import ExcelLoader
 from .columns import npa_columns
 from .util import columns_expander
+from .util import level_mapper, object_mapper, door_mapper, room_mapper
 
 
 class NPALoader(ExcelLoader):
@@ -34,3 +35,19 @@ class NPALoader(ExcelLoader):
         delta = n_cols - n_labels
 
         self.data.columns = columns_expander(npa_columns, delta)
+
+        # Prepare the parts for AKS
+        self.data["objekt"] = self.data["objekt"].astype(str).map(object_mapper)
+        self.data["ebene"] = self.data["ebene"].astype(str).map(level_mapper)
+        self.data["aks_plan"] = self.data["aks_plan"].astype(str)
+        self.data["room"] = self.data["aks_plan"].map(lambda x: x.split(".")[0])
+        self.data["door"] = self.data["aks_plan"].map(lambda x: x.split(".")[1])
+        self.data["room"] = self.data["room"].map(room_mapper)
+        self.data["door"] = self.data["door"].map(door_mapper)
+
+        # Prepare the AKS-Number
+        self.data["integration_aks"] = self.data["objekt"] + " " + \
+            self.data["ebene"] + \
+            self.data["bauteil"] + \
+            self.data["room"] + "." + \
+            self.data["door"]
