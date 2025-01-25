@@ -12,6 +12,11 @@ class FileMerger:
 
     """Merges multiple pandas.DataFrames basted on their 'merge' columns.
 
+    The merge is by default done as a left-join operation starting with the first
+    file in the list, expanding to the right. Thus make sure to start with the
+    most promising file. By changing the 'how' parameter, you can change the
+    joining behavior.
+
     :param files: A list of pandas.DataFrames.
     :type files: list
     :param how: Joining strategy (inner, outer, left, right)
