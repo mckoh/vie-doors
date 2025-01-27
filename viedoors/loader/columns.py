@@ -44,6 +44,7 @@ flt_columns = [
     "plan_nr",
     "bauteil",
     "ebene",
+    "modul",
     "raum_nr",
     "tuer_nr",
     "fluchtmöglichkeit_ja",
