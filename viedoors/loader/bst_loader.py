@@ -6,7 +6,7 @@ Date: Jan. 2025
 
 from .excel_loader import ExcelLoader
 from .columns import bst_columns
-from .util import columns_expander
+from .util import columns_expander, level_mapper
 
 
 class BSTLoader(ExcelLoader):
@@ -32,3 +32,23 @@ class BSTLoader(ExcelLoader):
         delta = n_cols - n_labels
 
         self.data.columns = columns_expander(bst_columns, delta)
+
+
+        # Prepare AKS parts
+        self.data["name"] = self.data["name"].astype(str)
+        self.data["ebene"] = self.data["ebene"].astype(str).map(level_mapper)
+        self.data["nummer"] = self.data["nummer"].astype(str)
+
+        # self.data["tuer_nr_aks"] = self.data["tuer_nr_aks"].astype(str)
+        # self.data["door"] = self.data["tuer_nr_aks"].map(lambda x: x.split(".")[1] if len(x.split("."))>1 else None)
+        # self.data["helper_1"] = self.data["tuer_nr_aks"].map(lambda x: x.split(".")[0] if len(x.split("."))>1 else None)
+        # self.data["helper_1"] = self.data["helper_1"].map(lambda x: x.split(" ")[1] if x is not None and len(x.split(" "))>1 else None)
+        # self.data["helper_1"] = self.data["helper_1"].map(lambda x: x.replace(" ", "") if x is not None else None)
+        # self.data["room"] = self.data["helper_1"].map(lambda x: x[-4:] if x is not None else None).map(room_mapper)
+        # self.data["modul"] = self.data["helper_1"].map(lambda x: x[3:4] if x is not None else None)
+        # self.data["ebene"] = self.data["helper_1"].map(lambda x: x[:2] if x is not None else None).map(level_mapper)
+
+        # Prepare the AKS-Number
+        self.data["integration_aks"] = self.data["name"] + " " + \
+            self.data["ebene"] + \
+            self.data["nummer"]
