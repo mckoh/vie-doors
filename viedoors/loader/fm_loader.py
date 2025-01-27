@@ -6,7 +6,7 @@ Date: Jan. 2025
 
 from .excel_loader import ExcelLoader
 from .columns import fm_columns
-from .util import columns_expander
+from .util import columns_expander, level_mapper, room_mapper, door_mapper
 
 
 class FMLoader(ExcelLoader):
@@ -34,3 +34,15 @@ class FMLoader(ExcelLoader):
         delta = n_cols - n_labels
 
         self.data.columns = columns_expander(fm_columns, delta)
+
+        # Prepare AKS columns
+        self.data["bauteil"] = self.data["bauteil"].astype(str)
+        self.data["ebene"] = self.data["ebene"].astype(str).map(level_mapper)
+
+
+        # Prepare the AKS-Number
+        self.data["integration_aks"] = self.data["bauteil"] + " " + \
+            self.data["ebene"] + \
+            self.data["brandmeldernr"] #+ \
+            # self.data["raum_nr"] + "." + \
+            # self.data["tuer_nr"]
