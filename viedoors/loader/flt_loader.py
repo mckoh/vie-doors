@@ -6,7 +6,7 @@ Date: Jan. 2025
 
 from .excel_loader import ExcelLoader
 from .columns import flt_columns
-from .util import columns_expander
+from .util import columns_expander, level_mapper, room_mapper, door_mapper
 
 
 class FLTLoader(ExcelLoader):
@@ -38,3 +38,18 @@ class FLTLoader(ExcelLoader):
         delta = n_cols - n_labels
 
         self.data.columns = columns_expander(flt_columns, delta)
+
+
+        # Prepare AKS columns
+        self.data["objekt"] = self.data["plan_nr"].astype(str).map(lambda x: x.split("_")[0] if x is not None and len(x.split("_"))>1 else None)
+        self.data["level"] = self.data["ebene"].astype(str).map(level_mapper)
+        self.data["bauteil"] = self.data["bauteil"].astype(str)
+        self.data["raum_nr"] = self.data["raum_nr"].astype(str).map(room_mapper)
+        self.data["tuer_nr"] = self.data["tuer_nr"].astype(str).map(door_mapper)
+
+        # Prepare the AKS-Number
+        self.data["integration_aks"] = self.data["objekt"] + " " + \
+            self.data["level"] + \
+            self.data["bauteil"] + \
+            self.data["raum_nr"] + "." + \
+            self.data["tuer_nr"]
