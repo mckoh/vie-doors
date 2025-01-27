@@ -39,7 +39,6 @@ class FLTLoader(ExcelLoader):
 
         self.data.columns = columns_expander(flt_columns, delta)
 
-
         # Prepare AKS columns
         self.data["objekt"] = self.data["plan_nr"].astype(str).map(lambda x: x.split("_")[0] if x is not None and len(x.split("_"))>1 else None)
         self.data["level"] = self.data["ebene"].astype(str).map(level_mapper)
