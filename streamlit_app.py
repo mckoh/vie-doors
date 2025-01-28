@@ -13,15 +13,32 @@ st.set_page_config(
     menu_items=None
 )
 
-st.title("VIE-Door Integrator")
+if "default_merge_disabled" not in st.session_state:
+    st.session_state["default_merge_disabled"] = False
 
-st.markdown("Unterhalb können die Files ausgewählt werden, die im weiteren Verlauf integriert werden. Bitte beachten Sie, dass alle 6 Files aufeinander abgestimmt sein, und Daten über dasselbe Objekt (z.B. 420) enthalten müssen.")
+def set_session_state():
+    if st.session_state["default_merge_disabled"]:
+        st.session_state["default_merge_disabled"] = False
+    else:
+        st.session_state["default_merge_disabled"] = True
 
+# SIDE BAR
+# -------------------------------------------------
 st.sidebar.header("Einstellungen")
 
 join_type = st.sidebar.selectbox("Integrationstyp auswählen", ["Links nach Rechts", "Rechts nach Links", "Vollständige Übereinstimmung", "Alles"])
 
 join_type_description = st.sidebar.empty()
+
+default_merge = st.sidebar.checkbox("merge-Spalte zum Zusammenführen verwenden", on_change=set_session_state)
+
+
+merge_column_name = st.sidebar.text_input(
+    label="Name der Matching-Spalte",
+    disabled=st.session_state["default_merge_disabled"]
+)
+
+
 
 if join_type == "Links nach Rechts":
     j = "left"
@@ -36,29 +53,34 @@ elif join_type == "Vollständige Übereinstimmung":
     j = "inner"
     join_type_description.markdown(">**Erklärung zum gewählten Join-Typ:** Datensätze werden nur dort zusammengeführt, wo es Übereinstimmungen gibt. Die Ergebnismenge enthält **alle Datensätze der linken (ersten) Datei die einen entsprechenden Datensatz in der zweiten (rechten) Datei besitzen**.")
 
-st.header("Dateien auswählen")
+
+# MAIN PAGE
+# -------------------------------------------------
+
+st.title("VIE-Door Integrator")
+st.markdown("Unterhalb können die Files ausgewählt werden, die im weiteren Verlauf integriert werden. Bitte beachten Sie, dass alle 6 Files aufeinander abgestimmt sein, und Daten über dasselbe Objekt (z.B. 420) enthalten müssen.")
 
 col_1, col_2, col_3 = st.columns(3, gap="medium", vertical_alignment="top", )
 
 with col_1:
-    st.subheader("CAD-File", divider=True)
-    cad = st.file_uploader("CAD File", "xlsx", label_visibility="hidden")
-    st.subheader("### NPA-File", divider=True)
-    npa = st.file_uploader("NPA File", "xlsx", label_visibility="hidden")
+    st.subheader("CAD-File auswählen", divider=True)
+    cad = st.file_uploader("CAD File", ["xlsx", "xls"], label_visibility="hidden")
+    st.subheader("NPA-File auswählen", divider=True)
+    npa = st.file_uploader("NPA File", ["xlsx", "xls"], label_visibility="hidden")
 
 with col_2:
-    st.subheader("Sisando BST-File", divider=True)
-    bst = st.file_uploader("Sisando BST File", "xlsx", label_visibility="hidden")
-    st.subheader("Sisando FLT-File", divider=True)
-    flt = st.file_uploader("Sisando FLT File", "xlsx", label_visibility="hidden")
+    st.subheader("Sisando BST-File auswählen", divider=True)
+    bst = st.file_uploader("Sisando BST File", ["xlsx", "xls"], label_visibility="hidden")
+    st.subheader("Sisando FLT-File auswählen", divider=True)
+    flt = st.file_uploader("Sisando FLT File", ["xlsx", "xls"], label_visibility="hidden")
 
 with col_3:
-    st.subheader("Schrack HM-File", divider=True)
+    st.subheader("Schrack HM-File auswählen", divider=True)
     hm = st.file_uploader("Schrack HM File", "xls", label_visibility="hidden")
-    st.subheader("Filemaker-File", divider=True)
-    fm = st.file_uploader("Filemaker File", "xlsx", label_visibility="hidden")
+    st.subheader("Filemaker-File auswählen", divider=True)
+    fm = st.file_uploader("Filemaker File", ["xlsx", "xls"], label_visibility="hidden")
 
-if st.button("Load Data", type="primary"):
+if st.button("Alle Daten laden", type="primary"):
 
     if bst is not None and flt is not None and hm is not None and \
         npa is not None and fm is not None and cad is not None:
@@ -88,7 +110,7 @@ if st.button("Load Data", type="primary"):
             l = l[::-1]
             j = "left"
 
-        merger = FileMerger(files=l, how=j)
+        merger = FileMerger(files=l, how=j, column=merge_column_name)
         merge = merger.get_data_merge()
 
 
@@ -100,7 +122,7 @@ if st.button("Load Data", type="primary"):
             writer.close()
 
         st.download_button(
-            label="Download Merge Excel",
+            label="Zusammengeführte Daten als Excel herunterladen",
             data=buffer,
             file_name="VIE-DOORS_merge_download.xlsx",
             mime="application/vnd.ms-excel",
