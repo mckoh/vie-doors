@@ -22,13 +22,17 @@ class FileMerger:
     :param how: Joining strategy (inner, outer, left, right)
     :type how: str
     :default how: "left"
+    :param column: Name of the merge column
+    :type column: str
+    :default column: "merge
     """
 
-    def __init__(self, files, how="left"):
+    def __init__(self, files, how="left", column="merge"):
         assert len(files) > 1, f"Number of files must be at least 2 but was {len(files)}."
         self.files = files
         self.data_merge = files[0]
         self.how = how
+        self.column = column
         self.__merge()
 
     def __merge(self):
@@ -43,7 +47,7 @@ class FileMerger:
             self.data_merge = merge(
                 left=old_merge,
                 right=file,
-                on="merge",
+                on=self.column,
                 how=self.how
             )
 
