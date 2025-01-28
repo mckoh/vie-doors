@@ -17,19 +17,46 @@ st.title("VIE-Door Integrator")
 
 st.markdown("Unterhalb können die Files ausgewählt werden, die im weiteren Verlauf integriert werden. Bitte beachten Sie, dass alle 6 Files aufeinander abgestimmt sein, und Daten über dasselbe Objekt (z.B. 420) enthalten müssen.")
 
-col_1, col_2, col_3 = st.columns(3, gap="medium", vertical_alignment="top")
+st.sidebar.header("Einstellungen")
+
+join_type = st.sidebar.selectbox("Integrationstyp auswählen", ["Links nach Rechts", "Rechts nach Links", "Vollständige Übereinstimmung", "Alles"])
+
+join_type_description = st.sidebar.empty()
+
+if join_type == "Links nach Rechts":
+    j = "left"
+    join_type_description.markdown(">**Erklärung zum gewählten Join-Typ:** Datensätze werden von Links nach Rechts zusammengeführt. Die Ergebnismenge enthält **alle Datensätze der linken (ersten) Datei** und **jene der zweiten (rechten) Datei, die mit jenen der ersten Datei übereinstimmen**. Falls keine Übereinstimmung gefunden wird, werden die restlichen Datensätze aus der rechten Tabelle mit Platzhalterwerten gefüllt.")
+elif join_type == "Rechts nach Links":
+    j = "right"
+    join_type_description.markdown(">**Erklärung zum gewählten Join-Typ:** Datensätze werden von Rechts nach Links zusammengeführt. Die Ergebnismenge enthält **alle Datensätze der rechten (zweiten) Datei** und **jene der ersten (linken) Datei, die mit jenen der ersten Datei übereinstimmen**. Falls keine Übereinstimmung gefunden wird, werden die restlichen Datensätze aus der rechten Tabelle mit Platzhalterwerten gefüllt.")
+elif join_type == "Alles":
+    j = "outer"
+    join_type_description.markdown(">**Erklärung zum gewählten Join-Typ:** Datensätze werden vollständig zusammengeführt. Die Ergebnismenge enthält **alle Datensätze der linken (ersten) Datei** und **alle Datensätze der zweiten (rechten) Datei**. Falls keine Übereinstimmung gefunden wird, werden die restlichen Datensätze aus der rechten Tabelle mit Platzhalterwerten gefüllt.")
+elif join_type == "Vollständige Übereinstimmung":
+    j = "inner"
+    join_type_description.markdown(">**Erklärung zum gewählten Join-Typ:** Datensätze werden nur dort zusammengeführt, wo es Übereinstimmungen gibt. Die Ergebnismenge enthält **alle Datensätze der linken (ersten) Datei die einen entsprechenden Datensatz in der zweiten (rechten) Datei besitzen**.")
+
+st.header("Dateien auswählen")
+
+col_1, col_2, col_3 = st.columns(3, gap="medium", vertical_alignment="top", )
 
 with col_1:
-    cad = st.file_uploader("CAD File", "xlsx")
-    npa = st.file_uploader("NPA File", "xlsx")
+    st.subheader("CAD-File", divider=True)
+    cad = st.file_uploader("CAD File", "xlsx", label_visibility="hidden")
+    st.subheader("### NPA-File", divider=True)
+    npa = st.file_uploader("NPA File", "xlsx", label_visibility="hidden")
 
 with col_2:
-    bst = st.file_uploader("Sisando BST File", "xlsx")
-    flt = st.file_uploader("Sisando FLT File", "xlsx")
+    st.subheader("Sisando BST-File", divider=True)
+    bst = st.file_uploader("Sisando BST File", "xlsx", label_visibility="hidden")
+    st.subheader("Sisando FLT-File", divider=True)
+    flt = st.file_uploader("Sisando FLT File", "xlsx", label_visibility="hidden")
 
 with col_3:
-    hm = st.file_uploader("Schrack HM File", "xls")
-    fm = st.file_uploader("Filemaker File", "xlsx")
+    st.subheader("Schrack HM-File", divider=True)
+    hm = st.file_uploader("Schrack HM File", "xls", label_visibility="hidden")
+    st.subheader("Filemaker-File", divider=True)
+    fm = st.file_uploader("Filemaker File", "xlsx", label_visibility="hidden")
 
 if st.button("Load Data", type="primary"):
 
@@ -54,7 +81,14 @@ if st.button("Load Data", type="primary"):
         fm_data = FMLoader(file=fm, title="FM")
         df_fm = fm_data.get_data(prefixed=True)
 
-        merger = FileMerger(files=[df_cad, df_npa, df_hm, df_bst, df_flt, df_fm], how="left")
+        l = [df_cad, df_npa, df_hm, df_bst, df_flt, df_fm]
+
+        # If Right Joins is used, turn the list upside down and do a left-join
+        if j == "right":
+            l = l[::-1]
+            j = "left"
+
+        merger = FileMerger(files=l, how=j)
         merge = merger.get_data_merge()
 
 
