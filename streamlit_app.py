@@ -66,7 +66,7 @@ if st.button("Load Data", type="primary"):
             writer.close()
 
         st.download_button(
-            label="Download Morge Excel",
+            label="Download Merge Excel",
             data=buffer,
             file_name="VIE-DOORS_merge_download.xlsx",
             mime="application/vnd.ms-excel",
