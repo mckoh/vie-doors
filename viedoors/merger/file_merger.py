@@ -51,6 +51,30 @@ class FileMerger:
                 how=self.how
             )
 
+    def find_non_matching_rows(self):
+        """Finds all lines in that exist in the right but not in the left file.
+
+        This function can only be used, when merging two files. It will
+        raise an error if you try to merge multiple files as line comparison
+        cannot be done unambigously in this case.
+
+        :raises: AssertionError when merging more than 2 files
+        :return: DataFrame with non-matching lines
+        :rtype: pandas.DataFrame
+
+        """
+        assert len(self.files) == 2, f"This function can only be used when merging two datafiles. You tried to merge {len(self.files)}."
+        for file in self.files[1:]:
+            old_merge = self.data_merge.copy()
+            self.data_merge = merge(
+                left=old_merge,
+                right=file,
+                on=self.column,
+                how="right",
+                indicator=True
+            )
+        return self.data_merge[self.data_merge['_merge'] == 'right_only']
+
 
     def get_data_merge(self):
         """Returns the finally merged data as pandas.DataFrame.
