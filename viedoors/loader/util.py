@@ -4,6 +4,10 @@ Author: Michael Kohlegger
 Date: Jan. 2025
 """
 
+from pandas import read_excel, concat
+from xlrd import open_workbook
+import openpyxl as xl
+
 
 EG_LABEL = "00"
 DA_LABEL = "DA"
@@ -40,7 +44,7 @@ LEVEL_DICTIONARY = {
     "7":   "07",
     "07":  "07",
     "8":   "08",
-    "8":  "81",
+    "08":  "08",
     "9":   "09",
     "09":  "09",
     "10":  "10",
@@ -161,6 +165,7 @@ def object_mapper(x):
         return None
     return x.split("_")[0]
 
+
 def columns_expander(columns, delta, prefix="dummy_"):
     """Expands a column list with dummy columns.
 
@@ -178,3 +183,33 @@ def columns_expander(columns, delta, prefix="dummy_"):
     assert isinstance(delta, int), f"delta must be int but was {type(delta)}."
     assert isinstance(columns, list), f"cols must be a list object but was {type(columns)}."
     return columns + [prefix+str(i) for i in range(1, delta+1)]
+
+
+def read_excel_all_sheets(excel_file, is_flt=False, *args, **kwargs):
+    """Loads an Excelfile with all included worksheets into one dataframe.
+
+    :param excel_file: Name of the Excel file
+    :return: DataFrame with all Data
+    :rtype: pandas.DataFrame
+    """
+
+    if excel_file.endswith(".xlsx"):
+        wb = xl.load_workbook(excel_file)
+        sheet_names = wb.sheetnames
+    else:
+        wb = open_workbook(excel_file, on_demand=True)
+        sheet_names = wb.sheet_names()
+
+    if is_flt:
+        sheet_names = sheet_names[1:]
+
+    if len(sheet_names) > 1:
+        base = read_excel(excel_file, sheet_name=sheet_names[0], *args, **kwargs)
+
+        for sheet_name in sheet_names[1:]:
+            df = read_excel(excel_file, sheet_name=sheet_name, *args, **kwargs)
+            base = concat([base, df], ignore_index=True)
+    else:
+        base = read_excel(excel_file, *args, **kwargs)
+
+    return base

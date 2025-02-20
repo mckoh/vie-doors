@@ -40,8 +40,8 @@ class NPALoader(ExcelLoader):
         self.data["objekt"] = self.data["objekt"].astype(str).map(object_mapper)
         self.data["ebene"] = self.data["ebene"].astype(str).map(level_mapper)
         self.data["aks_plan"] = self.data["aks_plan"].astype(str)
-        self.data["room"] = self.data["aks_plan"].map(lambda x: x.split(".")[0])
-        self.data["door"] = self.data["aks_plan"].map(lambda x: x.split(".")[1])
+        self.data["room"] = self.data["aks_plan"].astype(str).map(lambda x: x.split(".")[0] if len(x.split("."))>1 else x)
+        self.data["door"] = self.data["aks_plan"].astype(str).map(lambda x: x.split(".")[1] if len(x.split("."))>1 else x)
         self.data["room"] = self.data["room"].map(room_mapper)
         self.data["door"] = self.data["door"].map(door_mapper)
 
