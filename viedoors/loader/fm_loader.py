@@ -4,12 +4,10 @@ Author: Michael Kohlegger
 Date: Jan. 2025
 """
 
-from .excel_loader import ExcelLoader
-from .columns import fm_columns
-from .util import columns_expander, level_mapper, room_mapper, door_mapper
+from pandas import read_pickle
 
 
-class FMLoader(ExcelLoader):
+class FMLoader:
 
     """Loads Filemaker excel files as is from a source file into memory.
 
@@ -26,23 +24,22 @@ class FMLoader(ExcelLoader):
     :type title: str
     """
 
-    def __init__(self, file, title, *args, **kwargs):
-        super().__init__(file, title, *args, **kwargs)
+    def __init__(self):
+        self.data = read_pickle("static/fm.pkl")
 
-        n_cols = len(self.data.columns)
-        n_labels = len(fm_columns)
-        delta = n_cols - n_labels
+    def get_data(self, prefixed=True):
+        """Returns the stored DataFrame and prefixes all columns with title"""
 
-        self.data.columns = columns_expander(fm_columns, delta)
-
-        # Prepare AKS columns
-        self.data["bauteil"] = self.data["bauteil"].astype(str)
-        self.data["ebene"] = self.data["ebene"].astype(str).map(level_mapper)
+        return self.data
 
 
-        # Prepare the AKS-Number
-        self.data["integration_aks"] = self.data["bauteil"] + " " + \
-            self.data["ebene"] + \
-            self.data["brandmeldernr"] #+ \
-            # self.data["raum_nr"] + "." + \
-            # self.data["tuer_nr"]
+    def get_columns(self):
+        """Returns a list of columns from the contained DataFrame.
+
+        :return: Column names as python list object.
+        :rtype: list
+        """
+
+        return list(self.data.columns)
+
+
