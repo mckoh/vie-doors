@@ -162,3 +162,5 @@ if st.button("Alle Daten laden", type="primary"):
             mime="application/vnd.ms-excel",
             type="primary"
         )
+
+        # TODO Developer: Add code to automatically create/download delta files
