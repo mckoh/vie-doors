@@ -3,6 +3,7 @@ from io import BytesIO
 from pandas import ExcelWriter
 from viedoors import BSTLoader, FLTLoader, HMLoader, FMLoader
 from viedoors import CADLoader, NPALoader, FileMerger
+from zipfile import ZipFile
 
 
 st.set_page_config(
@@ -145,47 +146,32 @@ if st.button("Alle Daten laden", type="primary"):
         merger = FileMerger(files=l, how=j, column=merge_column_name)
         merge = merger.get_data_merge()
 
-        # TODO Developer #2: Add code to automatically create/download delta files
-        # delta_npa = FileMerger(files=, how="inner", )
-
-        # TODO Developer #4: Add metrics calculation
-
-        spec_col = st.columns(5, gap="small")
-
-        for i, dataset in enumerate([df_npa, df_hm, df_bst, df_flt, df_fm]):
-
-            name = dataset.columns[0].split("___")[0]+"-Datenfile"
-            fm = FileMerger(files=[df_cad, dataset], how="inner")
-
-            a = len(dataset)
-            b = len(fm.get_data_merge())
-            quotient = round(b/a*100, 2)
-
-            with spec_col[i]:
-                st.metric(label=f"{name} [%]", value=quotient, delta=round(quotient-100, 2))
-                st.write(f"**{name}:** Von {a} Datensätzen konnten {b} Datensätze erfolgreich mit dem CAD-Datenfile gematcht werden ({quotient}%).")
-
-                delta_buffer = BytesIO()
-                with ExcelWriter(delta_buffer, engine='xlsxwriter') as writer:
-                    nm = fm.find_non_matching_rows()
-                    nm.to_excel(f"non_matching/CAD_versus_{name}.xlsx")
-                    writer.close()
-
-                    st.download_button(
-                        label="Non-Matches herunterladen",
-                        data=delta_buffer,
-                        file_name=f"non-matches_{name}.xlsx",
-                        mime="application/vnd.ms-excel",
-                        type="secondary"
-                    )
 
         # DOWNLOAD
         buffer = BytesIO()
 
         with ExcelWriter(buffer, engine='xlsxwriter') as writer:
 
-            merge.to_excel(writer, sheet_name='Sheet1')
-            writer.close()
+            merge.to_excel(writer, sheet_name='all_matches')
+
+            spec_col = st.columns(5, gap="small")
+
+            for i, dataset in enumerate([df_npa, df_hm, df_bst, df_flt, df_fm]):
+
+                name = dataset.columns[0].split("___")[0]+"-File"
+                fm = FileMerger(files=[df_cad, dataset], how="inner")
+
+                a = len(dataset)
+                b = len(fm.get_data_merge())
+                quotient = round(b/a*100, 2)
+
+                with spec_col[i]:
+                    st.metric(label=f"{name} [%]", value=f"{quotient}%", delta=round(quotient-100, 2), border=False)
+                    st.write(f"**{name}:** Von {a} Datensätzen konnten {b} Datensätze erfolgreich mit dem CAD-Datenfile gematcht werden ({quotient}%).")
+
+                    nm = fm.find_non_matching_rows()
+                    nm.to_excel(writer, sheet_name=f"nomatch_{name}")
+
 
         st.download_button(
             label="Zusammengeführte Daten als Excel herunterladen",
