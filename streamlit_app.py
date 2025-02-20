@@ -99,8 +99,6 @@ col_1, col_2, col_3 = st.columns(3, gap="medium", vertical_alignment="top", )
 with col_1:
     st.subheader("CAD-File auswählen", divider=True)
     cad = st.file_uploader("CAD File", ["xlsx", "xls"], label_visibility="hidden")
-    st.subheader("NPA-File auswählen", divider=True)
-    npa = st.file_uploader("NPA File", ["xlsx", "xls"], label_visibility="hidden")
 
 with col_2:
     st.subheader("Sisando BST-File auswählen", divider=True)
@@ -111,13 +109,13 @@ with col_2:
 with col_3:
     st.subheader("Schrack HM-File auswählen", divider=True)
     hm = st.file_uploader("Schrack HM File", "xls", label_visibility="hidden")
-    st.subheader("Filemaker-File auswählen", divider=True)
-    fm = st.file_uploader("Filemaker File", ["xlsx", "xls"], label_visibility="hidden")
+    st.subheader("NPA-File auswählen", divider=True)
+    npa = st.file_uploader("NPA File", ["xlsx", "xls"], label_visibility="hidden")
 
 if st.button("Alle Daten laden", type="primary"):
 
     if bst is not None and flt is not None and hm is not None and \
-        npa is not None and fm is not None and cad is not None:
+        npa is not None and cad is not None:
 
         cad_data = CADLoader(file=cad, title="CAD")
         df_cad = cad_data.get_data(prefixed=True)
@@ -134,7 +132,7 @@ if st.button("Alle Daten laden", type="primary"):
         hm_data = HMLoader(file=hm, title="HM")
         df_hm = hm_data.get_data(prefixed=True)
 
-        fm_data = FMLoader(file=fm, title="FM")
+        fm_data = FMLoader()
         df_fm = fm_data.get_data(prefixed=True)
 
         l = [df_cad, df_npa, df_hm, df_bst, df_flt, df_fm]
@@ -147,7 +145,41 @@ if st.button("Alle Daten laden", type="primary"):
         merger = FileMerger(files=l, how=j, column=merge_column_name)
         merge = merger.get_data_merge()
 
+        # TODO Developer #2: Add code to automatically create/download delta files
+        # delta_npa = FileMerger(files=, how="inner", )
 
+        # TODO Developer #4: Add metrics calculation
+
+        spec_col = st.columns(5, gap="small")
+
+        for i, dataset in enumerate([df_npa, df_hm, df_bst, df_flt, df_fm]):
+
+            name = dataset.columns[0].split("___")[0]+"-Datenfile"
+            fm = FileMerger(files=[df_cad, dataset], how="inner")
+
+            a = len(dataset)
+            b = len(fm.get_data_merge())
+            quotient = round(b/a*100, 2)
+
+            with spec_col[i]:
+                st.metric(label=f"{name} [%]", value=quotient, delta=round(quotient-100, 2))
+                st.write(f"**{name}:** Von {a} Datensätzen konnten {b} Datensätze erfolgreich mit dem CAD-Datenfile gematcht werden ({quotient}%).")
+
+                delta_buffer = BytesIO()
+                with ExcelWriter(delta_buffer, engine='xlsxwriter') as writer:
+                    nm = fm.find_non_matching_rows()
+                    nm.to_excel(f"non_matching/CAD_versus_{name}.xlsx")
+                    writer.close()
+
+                    st.download_button(
+                        label="Non-Matches herunterladen",
+                        data=delta_buffer,
+                        file_name=f"non-matches_{name}.xlsx",
+                        mime="application/vnd.ms-excel",
+                        type="secondary"
+                    )
+
+        # DOWNLOAD
         buffer = BytesIO()
 
         with ExcelWriter(buffer, engine='xlsxwriter') as writer:
@@ -162,5 +194,3 @@ if st.button("Alle Daten laden", type="primary"):
             mime="application/vnd.ms-excel",
             type="primary"
         )
-
-        # TODO Developer: Add code to automatically create/download delta files

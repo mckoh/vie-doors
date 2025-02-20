@@ -193,12 +193,13 @@ def read_excel_all_sheets(excel_file, is_flt=False, *args, **kwargs):
     :rtype: pandas.DataFrame
     """
 
-    if excel_file.endswith(".xlsx"):
+    try:
         wb = xl.load_workbook(excel_file)
         sheet_names = wb.sheetnames
-    else:
-        wb = open_workbook(excel_file, on_demand=True)
-        sheet_names = wb.sheet_names()
+    except:
+        # wb = open_workbook(excel_file, on_demand=True)
+        #sheet_names = wb.sheet_names()
+        sheet_names = ["HALTEMAGNETE"]
 
     if is_flt:
         sheet_names = sheet_names[1:]
