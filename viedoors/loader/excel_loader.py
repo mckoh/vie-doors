@@ -7,7 +7,7 @@ Date: Jan. 2025
 
 from pandas import read_excel
 from os.path import join
-from .util import clean_data
+from .util import clean_data, read_excel_all_sheets
 
 
 class ExcelLoader:
@@ -39,8 +39,8 @@ class ExcelLoader:
         The method can be adjusted using pandas keyword arguments.
         """
 
-        self.data = read_excel(
-            io=self.file,
+        self.data = read_excel_all_sheets(
+            excel_file=self.file,
             dtype=object,
             *args,
             **kwargs
