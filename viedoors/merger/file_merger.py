@@ -86,18 +86,6 @@ class FileMerger:
         return self.data_merge
 
 
-    def merge_success_rate(self):
-        """Calculates the ratio between successful and total lines"""
-
-        total = 0
-        for file in self.files:
-            if len(file) > total:
-                total = len(file)
-        successful = len(self.data_merge)
-
-        return successful / total
-
-
     def export_merge(self, file="dummy.xlsx"):
         """Exports the merged data as Excel file.
 
