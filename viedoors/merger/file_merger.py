@@ -8,6 +8,13 @@ Date: Jan. 2025
 from pandas import merge
 
 
+MERGE_TYPES = {
+    "left_only": "Diese Zeile, identifiziert durch ihre AKS-Nummer, war nur im CAD-Datenfile vorhanden, nicht aber in diesem Datenfile.",
+    "right_only": "Diese Zeile, identifiziert durch ihre AKS-Nummer, war nur i in diesem Datenfile vorhanden, nicht aber im CAD-Datenfile.",
+    "both": "Diese Zeile, identifiziert durch ihre AKS-Nummer, war in diesem Datenfile vorhanden und auch im CAD-Datenfile."
+}
+
+
 class FileMerger:
 
     """Merges multiple pandas.DataFrames basted on their 'merge' columns.
@@ -58,11 +65,14 @@ class FileMerger:
         raise an error if you try to merge multiple files as line comparison
         cannot be done unambigously in this case.
 
+        The return will only contain the columns of the second dataframe.
+
         :raises: AssertionError when merging more than 2 files
         :return: DataFrame with non-matching lines
         :rtype: pandas.DataFrame
 
         """
+        n_cols_of_first = len(self.files[0].columns)
         assert len(self.files) == 2, f"This function can only be used when merging two datafiles. You tried to merge {len(self.files)}."
         for file in self.files[1:]:
             old_merge = self.data_merge.copy()
@@ -73,7 +83,12 @@ class FileMerger:
                 how="right",
                 indicator=True
             )
-        return self.data_merge[self.data_merge['_merge'] == 'right_only']
+
+        output = self.data_merge[self.data_merge['_merge'] == 'right_only']
+        output["Erklärung"] = output["_merge"].map(MERGE_TYPES)
+        output.drop("_merge", axis=1, inplace=True)
+
+        return output.iloc[:,n_cols_of_first:]
 
 
     def get_data_merge(self):
