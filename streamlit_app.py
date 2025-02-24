@@ -10,85 +10,9 @@ st.set_page_config(
     page_title="VIE Door Integrator",
     page_icon="📃",
     layout="wide",
-    initial_sidebar_state="auto",
+    initial_sidebar_state="collapsed",
     menu_items=None
 )
-
-if "default_merge_disabled" not in st.session_state:
-    st.session_state["default_merge_disabled"] = True
-
-def set_session_state():
-    if st.session_state["default_merge_disabled"]:
-        st.session_state["default_merge_disabled"] = False
-    else:
-        st.session_state["default_merge_disabled"] = True
-
-# SIDE BAR
-# -------------------------------------------------
-st.sidebar.header("Einstellungen")
-
-join_type = st.sidebar.selectbox(
-    "Integrationstyp auswählen",
-    [
-        "Links nach Rechts",
-        "Rechts nach Links",
-        "Vollständige Übereinstimmung",
-        "Alles"
-    ]
-)
-
-join_type_description = st.sidebar.empty()
-
-default_merge = st.sidebar.checkbox(
-    "'merge'-Spalte zum Zusammenführen verwenden (Default)",
-    value=True,
-    on_change=set_session_state
-)
-
-merge_column_name = st.sidebar.text_input(
-    label="Name der Matching-Spalte",
-    disabled=st.session_state["default_merge_disabled"]
-)
-
-if merge_column_name == "":
-    merge_column_name = "merge"
-
-if join_type == "Links nach Rechts":
-    j = "left"
-    join_type_description.markdown(">**Erklärung zum gewählten Join-Typ:** \
-        Datensätze werden von Links nach Rechts zusammengeführt. Die Ergebnismenge \
-        enthält **alle Datensätze der linken (ersten) Datei** und **jene der zweiten \
-        (rechten) Datei, die mit jenen der ersten Datei übereinstimmen**. Falls keine \
-        Übereinstimmung gefunden wird, werden die restlichen Datensätze aus der rechten \
-        Tabelle mit Platzhalterwerten gefüllt.")
-
-elif join_type == "Rechts nach Links":
-    j = "right"
-    join_type_description.markdown(">**Erklärung zum gewählten Join-Typ:** Datensätzen \
-        erden von Rechts nach Links zusammengeführt. Die Ergebnismenge enthält **alle \
-        Datensätze der rechten (zweiten) Datei** und **jene der ersten (linken) Datei, \
-        die mit jenen der ersten Datei übereinstimmen**. Falls keine Übereinstimmung \
-        gefunden wird, werden die restlichen Datensätze aus der rechten Tabelle mit \
-        Platzhalterwerten gefüllt.")
-
-elif join_type == "Alles":
-    j = "outer"
-    join_type_description.markdown(">**Erklärung zum gewählten Join-Typ:** Datensätze \
-        werden vollständig zusammengeführt. Die Ergebnismenge enthält **alle Datensätze \
-        der linken (ersten) Datei** und **alle Datensätze der zweiten (rechten) Datei**. \
-        Falls keine Übereinstimmung gefunden wird, werden die restlichen Datensätze aus \
-        der rechten Tabelle mit Platzhalterwerten gefüllt.")
-
-elif join_type == "Vollständige Übereinstimmung":
-    j = "inner"
-    join_type_description.markdown(">**Erklärung zum gewählten Join-Typ:** Datensätze \
-        werden nur dort zusammengeführt, wo es Übereinstimmungen gibt. Die Ergebnismenge \
-        enthält **alle Datensätze der linken (ersten) Datei die einen entsprechenden \
-        Datensatz in der zweiten (rechten) Datei besitzen**.")
-
-
-# MAIN PAGE
-# -------------------------------------------------
 
 st.title("VIE-Door Integrator")
 st.markdown("Unterhalb können die Files ausgewählt werden, die im weiteren Verlauf \
@@ -144,14 +68,9 @@ if st.button("Alle Daten laden", type="primary"):
         fm_data = FMLoader()
         df_fm = fm_data.get_data(prefixed=True)
 
-        l = [df_cad, df_npa, df_hm, df_bst, df_flt, df_fm]
+        l = [df_cad, df_npa, df_bst, df_flt, df_hm, df_fm]
 
-        # If Right Joins is used, turn the list upside down and do a left-join
-        if j == "right":
-            l = l[::-1]
-            j = "left"
-
-        merger = FileMerger(files=l, how=j, column=merge_column_name)
+        merger = FileMerger(files=l, how="left", column="merge")
         merge = merger.get_data_merge()
 
 
