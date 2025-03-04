@@ -28,6 +28,8 @@ class ExcelLoader:
 
         self.__load_data(*args, **kwargs)
 
+        self.__remove_duplicates()
+
 
     def __load_data(self, *args, **kwargs):
         """Loads the specified file as DataFrame (only internal use).
@@ -49,6 +51,10 @@ class ExcelLoader:
         # Automatically deal with empty lines (they occur from time to time)
         # having no values at all. These get deleted after loading
         self.data.dropna(axis=0, how="all", inplace=True)
+
+
+    def __remove_duplicates(self):
+        self.data = self.data.drop_duplicates()
 
 
     def __clean_data(self):
