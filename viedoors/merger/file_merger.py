@@ -110,9 +110,6 @@ class FileMerger:
         output = self.data_merge.copy()
         output = output.loc[output.duplicated("merge")]
 
-        print(output)
-        print(n_cols_of_first)
-
         return output.iloc[:,n_cols_of_first:]
 
 
