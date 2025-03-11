@@ -81,7 +81,7 @@ if st.button("Alle Daten laden", type="primary"):
 
             merge.to_excel(writer, sheet_name='all_matches')
 
-            for dataset in [df_npa, df_bst, df_flt, df_hm, df_fm]:
+            for i, dataset in enumerate([df_npa, df_bst, df_flt, df_hm, df_fm]):
 
                 name = dataset.columns[0].split("___")[0]+"-File"
                 fm = FileMerger(files=[df_cad, dataset], how="inner")
@@ -97,10 +97,13 @@ if st.button("Alle Daten laden", type="primary"):
                     st.metric(label=f"{name}", value=f"{quotient}%", delta=f"{delta}%.", border=True, label_visibility="collapsed")
 
                     nm = fm.find_non_matching_rows()
-                    dp = fm.find_duplicates()
                     nm.to_excel(writer, sheet_name=f"nomatch_{name}")
-                    dp.to_excel(writer, sheet_name=f"aks_duplicate_{name}")
 
+                    # This step is scipped for filemaker, as the duplicate
+                    # detection process does not work sufficiently there
+                    if i < 4:
+                        dp = fm.find_duplicates()
+                        dp.to_excel(writer, sheet_name=f"aks_duplicate_{name}")
 
         st.download_button(
             label="Zusammengeführte Daten als Excel herunterladen",
