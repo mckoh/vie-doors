@@ -28,6 +28,7 @@ class ExcelLoader:
 
         self.__load_data(*args, **kwargs)
 
+        # TODO Dev: Test functionality and remove comment if successfully done
         self.__remove_duplicates()
 
 
