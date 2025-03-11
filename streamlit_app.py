@@ -97,7 +97,9 @@ if st.button("Alle Daten laden", type="primary"):
                     st.metric(label=f"{name}", value=f"{quotient}%", delta=f"{delta}%.", border=True, label_visibility="collapsed")
 
                     nm = fm.find_non_matching_rows()
+                    dp = fm.find_duplicates()
                     nm.to_excel(writer, sheet_name=f"nomatch_{name}")
+                    dp.to_excel(writer, sheet_name=f"aks_duplicate_{name}")
 
 
         st.download_button(
