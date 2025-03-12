@@ -4,7 +4,7 @@ Author: Michael Kohlegger
 Date: Jan. 2025
 """
 
-from pandas import read_excel
+from pandas import read_excel, concat
 from xlrd import open_workbook
 import openpyxl as xl
 
