@@ -12,3 +12,4 @@ from .loader.npa_loader import NPALoader
 from .loader.hm_loader import HMLoader
 from .loader.fm_loader import FMLoader
 from .merger.file_merger import FileMerger
+from .merger.util import eliminate_duplicates

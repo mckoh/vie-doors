@@ -4,7 +4,7 @@ Author: Michael Kohlegger
 Date: Jan. 2025
 """
 
-from pandas import read_excel, concat
+from pandas import read_excel
 from xlrd import open_workbook
 import openpyxl as xl
 
@@ -214,3 +214,31 @@ def read_excel_all_sheets(excel_file, is_flt=False, *args, **kwargs):
         base = read_excel(excel_file, *args, **kwargs)
 
     return base
+
+
+def eliminate_duplicates(merge, col_a, col_b):
+    """Eliminates duplicate rows based on a comparison of col_a and col_b
+
+    :param merge: Base DataFrame to be used
+    :param col_a: The left column that should be matched
+    :param col_b: The right column that should be matched
+    :return: The DataFrame without duplicates
+    :rtype: pandas.DataFrame
+    """
+
+    for i, aks in enumerate(merge["merge"].unique()):
+        merge_sub = merge.loc[merge["merge"]==aks]
+
+        if len(merge_sub)>1:
+            consolidated = merge_sub.loc[merge_sub[col_a]==merge_sub[col_b]]
+            if len(consolidated) == 0:
+                consolidated = merge_sub
+        else:
+            consolidated = merge_sub
+
+        if i == 0:
+            new_merge = consolidated
+        else:
+            new_merge = concat([new_merge, consolidated])
+
+    return new_merge
