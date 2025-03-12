@@ -70,17 +70,20 @@ if st.button("Alle Daten laden", type="primary"):
 
         l = [df_cad, df_npa, df_bst, df_flt, df_hm, df_fm]
 
+# MERGING
+# -----------------------------------------------------------------------------------
+
         merger = FileMerger(files=l, how="left", column="merge")
         merge = merger.get_data_merge()
 
-        # TODO Dev: This will eliminate duplicate rows based on various columns
-        # Test this an remove the comment if successful
         merge = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "NPA___alte_tuernummer")
         merge = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "HM___tuer_nr_alt")
         merge = eliminate_duplicates(merge, "CAD___gar_flucht_tuer_nr", "NPA___fluchtwegs_tuer_nr")
+        merge = eliminate_duplicates(merge, "NPA___alte_tuernummer", "FM___brandmeldernr")
 
+# DOWNLOAD
+# -----------------------------------------------------------------------------------
 
-        # DOWNLOAD
         buffer = BytesIO()
 
         with ExcelWriter(buffer, engine='xlsxwriter') as writer:
