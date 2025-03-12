@@ -2,7 +2,7 @@ import streamlit as st
 from io import BytesIO
 from pandas import ExcelWriter
 from viedoors import BSTLoader, FLTLoader, HMLoader, FMLoader
-from viedoors import CADLoader, NPALoader, FileMerger
+from viedoors import CADLoader, NPALoader, FileMerger, eliminate_duplicates
 from zipfile import ZipFile
 
 
@@ -73,6 +73,12 @@ if st.button("Alle Daten laden", type="primary"):
         merger = FileMerger(files=l, how="left", column="merge")
         merge = merger.get_data_merge()
 
+        # TODO Dev: This will eliminate duplicate rows based on various columns
+        # Test this an remove the comment if successful
+        merge = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "NPA___alte_tuernummer")
+        merge = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "HM___tuer_nr_alt")
+        merge = eliminate_duplicates(merge, "CAD___gar_flucht_tuer_nr", "NPA___fluchtwegs_tuer_nr")
+
 
         # DOWNLOAD
         buffer = BytesIO()
@@ -80,6 +86,9 @@ if st.button("Alle Daten laden", type="primary"):
         with ExcelWriter(buffer, engine='xlsxwriter') as writer:
 
             merge.to_excel(writer, sheet_name='all_matches')
+
+            # CAD duplicates are written to a separate sheet
+            df_cad[df_cad["merge"].duplicated()].to_excel(writer, sheet_name="aks_duplicate_cad")
 
             for i, dataset in enumerate([df_npa, df_bst, df_flt, df_hm, df_fm]):
 
@@ -99,11 +108,11 @@ if st.button("Alle Daten laden", type="primary"):
                     nm = fm.find_non_matching_rows()
                     nm.to_excel(writer, sheet_name=f"nomatch_{name}")
 
-                    # This step is scipped for filemaker, as the duplicate
-                    # detection process does not work sufficiently there
-                    if i < 4:
-                        dp = fm.find_duplicates()
-                        dp.to_excel(writer, sheet_name=f"aks_duplicate_{name}")
+                # This step is scipped for filemaker, as the duplicate
+                # detection process does not work sufficiently there
+                if i < 4:
+                    dp = dataset[dataset["merge"].duplicated()]
+                    dp.to_excel(writer, sheet_name=f"aks_duplicate_{name}")
 
         st.download_button(
             label="Zusammengeführte Daten als Excel herunterladen",
