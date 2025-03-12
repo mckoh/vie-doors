@@ -28,9 +28,6 @@ class ExcelLoader:
 
         self.__load_data(*args, **kwargs)
 
-        # TODO Dev: Test functionality and remove comment if successfully done
-        self.__remove_duplicates()
-
 
     def __load_data(self, *args, **kwargs):
         """Loads the specified file as DataFrame (only internal use).
