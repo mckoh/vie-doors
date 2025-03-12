@@ -68,7 +68,7 @@ npa_columns = [
     "bauteil",
     "aks_plan",
     "aks_real",
-    "alte_tuernummer ",
+    "alte_tuernummer",
     "schlossernummer",
     "hoehe_cm",
     "breite_cm",
