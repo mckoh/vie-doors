@@ -70,8 +70,8 @@ class FileMerger:
         :raises: AssertionError when merging more than 2 files
         :return: DataFrame with non-matching lines
         :rtype: pandas.DataFrame
-
         """
+
         n_cols_of_first = len(self.files[0].columns)
         assert len(self.files) == 2, f"This function can only be used when merging two datafiles. You tried to merge {len(self.files)}."
         for file in self.files[1:]:
@@ -85,8 +85,30 @@ class FileMerger:
             )
 
         output = self.data_merge[self.data_merge['_merge'] == 'right_only']
-        output["Erklärung"] = output["_merge"].map(MERGE_TYPES)
-        output.drop("_merge", axis=1, inplace=True)
+
+        return output.iloc[:,n_cols_of_first:].drop("_merge", axis=1)
+
+    def find_duplicates(self):
+        """Finds all duplicates in 'merge' column.
+
+        :raises: AssertionError when merging more than 2 files
+        :return: DataFrame with duplicate rows
+        :rtype: pandas.DataFrame
+        """
+
+        n_cols_of_first = len(self.files[0].columns)
+        assert len(self.files) == 2, f"This function can only be used when merging two datafiles. You tried to merge {len(self.files)}."
+        for file in self.files[1:]:
+            old_merge = self.data_merge.copy()
+            self.data_merge = merge(
+                left=old_merge,
+                right=file,
+                on=self.column,
+                how="left"
+            )
+
+        output = self.data_merge.copy()
+        output = output.loc[output.duplicated("merge")]
 
         return output.iloc[:,n_cols_of_first:]
 

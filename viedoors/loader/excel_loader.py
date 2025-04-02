@@ -5,7 +5,7 @@ Date: Jan. 2025
 """
 
 
-from pandas import read_excel
+from pandas import read_excel, concat
 from os.path import join
 from .util import clean_data, read_excel_all_sheets
 
@@ -49,6 +49,10 @@ class ExcelLoader:
         # Automatically deal with empty lines (they occur from time to time)
         # having no values at all. These get deleted after loading
         self.data.dropna(axis=0, how="all", inplace=True)
+
+
+    def __remove_duplicates(self):
+        self.data = self.data.drop_duplicates()
 
 
     def __clean_data(self):
