@@ -90,8 +90,9 @@ if st.button("Alle Daten laden", type="primary"):
             merge.to_excel(writer, sheet_name='Merge')
 
             # CAD duplicates are written to a separate sheet
-            dp = count_duplicates(df_cad)
-            dp.to_excel(writer, sheet_name=f"AKS-Duplicate CAD-File")
+            dp_cad = count_duplicates(df_cad)
+            dp_cad.rename(columns={"Anzahl Duplikate": f"Anzahl Duplikate CAD-File"}, inplace=True)
+            #dp.to_excel(writer, sheet_name=f"AKS-Duplicate CAD-File")
 
             for i, dataset in enumerate([df_npa, df_bst, df_flt, df_hm, df_fm]):
 
@@ -116,7 +117,12 @@ if st.button("Alle Daten laden", type="primary"):
                 # FM has i = 5
                 if i < 4:
                     dp = count_duplicates(dataset)
-                    dp.to_excel(writer, sheet_name=f"AKS-Duplicate {name}")
+                    dp.rename(columns={"Anzahl Duplikate": f"Anzahl Duplikate {name}"}, inplace=True)
+                    dp_cad = dp_cad.merge(dp, on='AKS-Nummer', how='outer')
+
+            dp_cad.fillna(1, inplace=True)
+            dp_cad["Zeilen im Merge"] = dp_cad["Anzahl Duplikate CAD-File"] * dp_cad["Anzahl Duplikate NPA-File"] * dp_cad["Anzahl Duplikate BST-File"] * dp_cad["Anzahl Duplikate FLT-File"]
+            dp_cad.to_excel(writer, sheet_name=f"AKS-Duplikate")
 
 
         st.download_button(
