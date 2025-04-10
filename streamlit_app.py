@@ -75,10 +75,15 @@ if st.button("Alle Daten laden", type="primary"):
         merger = FileMerger(files=l, how="left", column="merge")
         merge = merger.get_data_merge()
 
-        merge = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "NPA___alte_tuernummer")
-        merge = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "HM___tuer_nr_alt")
-        merge = eliminate_duplicates(merge, "CAD___gar_flucht_tuer_nr", "NPA___fluchtwegs_tuer_nr")
-        merge = eliminate_duplicates(merge, "NPA___alte_tuernummer", "FM___brandmeldernr")
+        merge, info = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "NPA___alte_tuernummer")
+        merge, info = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "HM___tuer_nr_alt", info)
+        merge, info = eliminate_duplicates(merge, "CAD___gar_flucht_tuer_nr", "NPA___fluchtwegs_tuer_nr", info)
+        merge, info = eliminate_duplicates(merge, "NPA___alte_tuernummer", "FM___brandmeldernr", info)
+
+        elimination_info = DataFrame({
+            "AKS-Nummer": info.keys(),
+            "Zeilen die durch Zusatzattribute eliminiert werden konnten": info.values()
+        })
 
 # DOWNLOAD
 # -----------------------------------------------------------------------------------
@@ -92,7 +97,6 @@ if st.button("Alle Daten laden", type="primary"):
             # CAD duplicates are written to a separate sheet
             dp_cad = count_duplicates(df_cad)
             dp_cad.rename(columns={"Anzahl Duplikate": f"Anzahl Duplikate CAD-File"}, inplace=True)
-            #dp.to_excel(writer, sheet_name=f"AKS-Duplicate CAD-File")
 
             for i, dataset in enumerate([df_npa, df_bst, df_flt, df_hm, df_fm]):
 
@@ -110,7 +114,7 @@ if st.button("Alle Daten laden", type="primary"):
                     st.metric(label=f"{name}", value=f"{quotient}%", delta=f"{delta}%.", border=True, label_visibility="collapsed")
 
                     nm = fm.find_non_matching_rows()
-                    nm.to_excel(writer, sheet_name=f"Nicht-Matches CAD und {name}")
+                    nm.to_excel(writer, sheet_name=f"Zeilen aus {name} ohne AKS-Match")
 
                 # This step is scipped for filemaker, as the duplicate
                 # detection process does not work sufficiently there
@@ -121,7 +125,10 @@ if st.button("Alle Daten laden", type="primary"):
                     dp_cad = dp_cad.merge(dp, on='AKS-Nummer', how='outer')
 
             dp_cad.fillna(1, inplace=True)
-            dp_cad["Zeilen im Merge"] = dp_cad["Anzahl Duplikate CAD-File"] * dp_cad["Anzahl Duplikate NPA-File"] * dp_cad["Anzahl Duplikate BST-File"] * dp_cad["Anzahl Duplikate FLT-File"]
+            dp_cad["Zeilen im Merge nach Zusammenführen"] = dp_cad["Anzahl Duplikate CAD-File"] * dp_cad["Anzahl Duplikate NPA-File"] * dp_cad["Anzahl Duplikate BST-File"] * dp_cad["Anzahl Duplikate FLT-File"]
+            dp_cad = dp_cad.merge(elimination_info, on="AKS-Nummer", how='outer')
+            dp_cad.fillna(0, inplace=True)
+            dp_cad["Verbleibende Zeilen im Merge"] = dp_cad["Zeilen im Merge nach Zusammenführen"] - dp_cad["Zeilen die durch Zusatzattribute eliminiert werden konnten"]
             dp_cad.to_excel(writer, sheet_name=f"AKS-Duplikate")
 
 
