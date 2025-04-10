@@ -1,5 +1,6 @@
-xlrd
-pandas
-openpyxl
-streamlit
-xlsxwriter
+xlrd==2.0.1
+pandas==2.2.3
+openpyxl==3.1.5
+streamlit==1.41.1
+XlsxWriter==3.2.2
+dill==0.3.9

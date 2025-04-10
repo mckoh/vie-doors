@@ -4,7 +4,7 @@ Author: Michael Kohlegger
 Date: Mar. 2025
 """
 
-from pandas import concat
+from pandas import concat, DataFrame
 
 def eliminate_duplicates(merge, col_a, col_b):
     """Eliminates duplicate rows based on a comparison of col_a and col_b
@@ -32,3 +32,17 @@ def eliminate_duplicates(merge, col_a, col_b):
             new_merge = concat([new_merge, consolidated])
 
     return new_merge
+
+
+def count_duplicates(dataframe):
+    """Searches for duplicate values in the given dataframe and counts them
+
+    :param dataframe: The DataFrame to be parsed
+    :return: The DataFrame without duplicates
+    :rtype: pandas.DataFrame
+    """
+    duplicate_entries = DataFrame(dataframe["merge"].value_counts())
+    duplicate_entries.columns =["Anzahl Duplikate"]
+    duplicate_entries["AKS-Nummer"] = duplicate_entries.index
+    duplicate_entries.index = range(len(duplicate_entries))
+    return duplicate_entries[["AKS-Nummer", "Anzahl Duplikate"]].loc[duplicate_entries["Anzahl Duplikate"]>1]

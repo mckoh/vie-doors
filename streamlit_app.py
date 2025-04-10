@@ -1,9 +1,8 @@
 import streamlit as st
 from io import BytesIO
-from pandas import ExcelWriter
-from viedoors import BSTLoader, FLTLoader, HMLoader, FMLoader
+from pandas import ExcelWriter, DataFrame
+from viedoors import BSTLoader, FLTLoader, HMLoader, FMLoader, count_duplicates
 from viedoors import CADLoader, NPALoader, FileMerger, eliminate_duplicates
-from zipfile import ZipFile
 
 
 st.set_page_config(
@@ -88,10 +87,12 @@ if st.button("Alle Daten laden", type="primary"):
 
         with ExcelWriter(buffer, engine='xlsxwriter') as writer:
 
-            merge.to_excel(writer, sheet_name='all_matches')
+            merge.to_excel(writer, sheet_name='Merge')
 
             # CAD duplicates are written to a separate sheet
-            df_cad[df_cad["merge"].duplicated()].to_excel(writer, sheet_name="aks_duplicate_cad")
+            dp_cad = count_duplicates(df_cad)
+            dp_cad.rename(columns={"Anzahl Duplikate": f"Anzahl Duplikate CAD-File"}, inplace=True)
+            #dp.to_excel(writer, sheet_name=f"AKS-Duplicate CAD-File")
 
             for i, dataset in enumerate([df_npa, df_bst, df_flt, df_hm, df_fm]):
 
@@ -109,13 +110,20 @@ if st.button("Alle Daten laden", type="primary"):
                     st.metric(label=f"{name}", value=f"{quotient}%", delta=f"{delta}%.", border=True, label_visibility="collapsed")
 
                     nm = fm.find_non_matching_rows()
-                    nm.to_excel(writer, sheet_name=f"nomatch_{name}")
+                    nm.to_excel(writer, sheet_name=f"Nicht-Matches CAD und {name}")
 
                 # This step is scipped for filemaker, as the duplicate
                 # detection process does not work sufficiently there
+                # FM has i = 5
                 if i < 4:
-                    dp = dataset[dataset["merge"].duplicated()]
-                    dp.to_excel(writer, sheet_name=f"aks_duplicate_{name}")
+                    dp = count_duplicates(dataset)
+                    dp.rename(columns={"Anzahl Duplikate": f"Anzahl Duplikate {name}"}, inplace=True)
+                    dp_cad = dp_cad.merge(dp, on='AKS-Nummer', how='outer')
+
+            dp_cad.fillna(1, inplace=True)
+            dp_cad["Zeilen im Merge"] = dp_cad["Anzahl Duplikate CAD-File"] * dp_cad["Anzahl Duplikate NPA-File"] * dp_cad["Anzahl Duplikate BST-File"] * dp_cad["Anzahl Duplikate FLT-File"]
+            dp_cad.to_excel(writer, sheet_name=f"AKS-Duplikate")
+
 
         st.download_button(
             label="Zusammengeführte Daten als Excel herunterladen",

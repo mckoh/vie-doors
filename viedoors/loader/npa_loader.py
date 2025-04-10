@@ -51,3 +51,6 @@ class NPALoader(ExcelLoader):
             self.data["bauteil"] + \
             self.data["room"] + "." + \
             self.data["door"]
+
+        # Delete multiple header rows that are copied into the data
+        self.data.drop(self.data.loc[self.data["objekt"]=="Objekt"].index, axis=0, inplace=True)
