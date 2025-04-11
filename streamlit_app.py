@@ -114,7 +114,7 @@ if st.button("Alle Daten laden", type="primary"):
                     st.metric(label=f"{name}", value=f"{quotient}%", delta=f"{delta}%.", border=True, label_visibility="collapsed")
 
                     nm = fm.find_non_matching_rows()
-                    nm.to_excel(writer, sheet_name=f"Zeilen aus {name} ohne AKS-Match")
+                    nm.to_excel(writer, sheet_name=f"{name} ohne AKS-Match")
 
                 # This step is scipped for filemaker, as the duplicate
                 # detection process does not work sufficiently there
