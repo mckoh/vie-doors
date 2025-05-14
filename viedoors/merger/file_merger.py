@@ -123,7 +123,7 @@ class FileMerger:
         return output.iloc[:,n_cols_of_first:]
 
 
-    def get_data_merge(self, reduce_cols=False):
+    def get_data_merge(self, reduce_cols=False, rename=False):
         """Returns the finally merged data as pandas.DataFrame.
 
         :param reduce_cols: Switch to tell if only needed columns are returned
@@ -135,7 +135,23 @@ class FileMerger:
             self.data_merge["HM___uz_6_steu"] = self.data_merge["HM___uz_6_steu"].map(
                 lambda x: "Ja" if notna(x) else ""
             )
-            return self.data_merge[REDUCED_COLS]
+
+            c = self.data_merge[REDUCED_COLS].copy()
+            c["Selbsschließend"] = ""
+
+            if rename:
+                clean_column_names = [
+                    "Feuerwiderstand",
+                    "Fluchttüre Ja/Nein",
+                    "UZ6/Steu. Ja/Nein",
+                    "Nottaster Ja/Nein",
+                    "AKS Nummer",
+                    "Anzahl Flügel 1/2/S",
+                    "SZ-Magnet Ja/Nein",
+                    "Selbstschließend"
+                ]
+                c.columns = clean_column_names
+            return c
 
         return self.data_merge
 

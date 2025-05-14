@@ -73,7 +73,7 @@ if st.button("Alle Daten laden", type="primary"):
 # -----------------------------------------------------------------------------------
 
         merger = FileMerger(files=l, how="left", column="merge")
-        merge = merger.get_data_merge(reduce_cols=True)
+        merge = merger.get_data_merge(reduce_cols=True, rename=True)
 
         merge, info = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "NPA___alte_tuernummer")
         merge, info = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "HM___tuer_nr_alt", info)
