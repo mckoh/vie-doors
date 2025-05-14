@@ -5,7 +5,7 @@ Date: Jan. 2025
 """
 
 
-from pandas import merge
+from pandas import merge, notna
 
 
 MERGE_TYPES = {
@@ -13,6 +13,16 @@ MERGE_TYPES = {
     "right_only": "Diese Zeile, identifiziert durch ihre AKS-Nummer, war nur i in diesem Datenfile vorhanden, nicht aber im CAD-Datenfile.",
     "both": "Diese Zeile, identifiziert durch ihre AKS-Nummer, war in diesem Datenfile vorhanden und auch im CAD-Datenfile."
 }
+
+REDUCED_COLS = [
+    "NPA___feuerwider-stand",
+    "NPA___flucht__ja_nein",
+    "HM___uz_6_steu", # (Wenn in der Zelle ein Inhalt ist, dann soll ein Ja angezeigt sein)
+    "NPA___nottaster__ja_nein",
+    "CAD___integration_aks",
+    "NPA___fluegel__1_2_3",
+    "NPA___sz_magnet__ja_nein",
+]
 
 
 class FileMerger:
@@ -113,12 +123,19 @@ class FileMerger:
         return output.iloc[:,n_cols_of_first:]
 
 
-    def get_data_merge(self):
+    def get_data_merge(self, reduce_cols=False):
         """Returns the finally merged data as pandas.DataFrame.
 
+        :param reduce_cols: Switch to tell if only needed columns are returned
         :return: Merged data.
         :rtype: pandas.DataFrame
         """
+
+        if reduce_cols:
+            self.data_merge["HM___uz_6_steu"] = self.data_merge["HM___uz_6_steu"].map(
+                lambda x: "Ja" if notna(x) else ""
+            )
+            return self.data_merge[REDUCED_COLS]
 
         return self.data_merge
 
