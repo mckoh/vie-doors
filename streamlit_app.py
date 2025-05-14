@@ -1,9 +1,19 @@
 import streamlit as st
 from io import BytesIO
-from pandas import ExcelWriter, DataFrame
+from pandas import ExcelWriter, DataFrame, notna
 from viedoors import BSTLoader, FLTLoader, HMLoader, FMLoader, count_duplicates
 from viedoors import CADLoader, NPALoader, FileMerger, eliminate_duplicates
 
+
+REDUCED_COLS = [
+    "NPA___feuerwider-stand",
+    "NPA___flucht__ja_nein",
+    "HM___uz_6_steu", # (Wenn in der Zelle ein Inhalt ist, dann soll ein Ja angezeigt sein)
+    "NPA___nottaster__ja_nein",
+    "CAD___integration_aks",
+    "NPA___fluegel__1_2_3",
+    "NPA___sz_magnet__ja_nein"
+]
 
 st.set_page_config(
     page_title="VIE Door Integrator",
@@ -73,7 +83,7 @@ if st.button("Alle Daten laden", type="primary"):
 # -----------------------------------------------------------------------------------
 
         merger = FileMerger(files=l, how="left", column="merge")
-        merge = merger.get_data_merge(reduce_cols=True, rename=True)
+        merge = merger.get_data_merge()
 
         merge, info = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "NPA___alte_tuernummer")
         merge, info = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "HM___tuer_nr_alt", info)
@@ -85,6 +95,28 @@ if st.button("Alle Daten laden", type="primary"):
             "Zeilen die durch Zusatzattribute eliminiert werden konnten": info.values()
         })
 
+        merge["HM___uz_6_steu"] = merge["HM___uz_6_steu"].map(
+            lambda x: "Ja" if notna(x) else ""
+        )
+
+        output = merge[REDUCED_COLS].copy()
+        output["Selbsschließend"] = ""
+
+        clean_column_names = [
+            "Feuerwiderstand",
+            "Fluchttüre Ja/Nein",
+            "UZ6/Steu. Ja/Nein",
+            "Nottaster Ja/Nein",
+            "AKS Nummer",
+            "Anzahl Flügel 1/2/S",
+            "SZ-Magnet Ja/Nein",
+            "Selbstschließend"
+        ]
+
+        output.columns = clean_column_names
+
+        output = output.iloc[:, [4, 0, 1, 2, 3, 5, 6, 7]]
+
 # DOWNLOAD
 # -----------------------------------------------------------------------------------
 
@@ -92,7 +124,7 @@ if st.button("Alle Daten laden", type="primary"):
 
         with ExcelWriter(buffer, engine='xlsxwriter') as writer:
 
-            merge.to_excel(writer, sheet_name='Merge')
+            output.to_excel(writer, sheet_name='Merge')
 
             # CAD duplicates are written to a separate sheet
             dp_cad = count_duplicates(df_cad)
