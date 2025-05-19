@@ -186,7 +186,9 @@ if st.button("Alle Daten laden", type="primary"):
 
             # CREATE FINAL COLUMN
 
-            dp_cad["Zeilen im Merge nach Zusammenführen"] = prod([v for v in dp_cad.iloc[0].to_list()[1:] if v > 1])
+            for j in range(len(dp_cad)):
+                dp_cad.loc[dp_cad.iloc[j].name, "Zeilen im Merge nach Zusammenführen"] = prod([v for v in dp_cad.iloc[j].to_list() if v > 1])
+
             dp_cad = dp_cad.merge(elimination_info, on="AKS-Nummer", how='outer')
 
             dp_cad.fillna(0, inplace=True)
