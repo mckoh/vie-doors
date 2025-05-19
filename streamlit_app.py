@@ -156,10 +156,14 @@ if st.button("Alle Daten laden", type="primary"):
                     dp.rename(columns={"Anzahl Duplikate": f"Anzahl Duplikate {name}"}, inplace=True)
                     dp_cad = dp_cad.merge(dp, on='AKS-Nummer', how='outer')
 
-            dp_cad.fillna(1, inplace=True)
+            # TODO Dev: wie können wir das problem lösen. Aktuell wird bei den Duplikaten immer 1 angeschrieben, auch wenn die AKS im betreffenden File nicht vorkam
+
+            # Solution: Iterate Files and filter Duplicate DF (loc) for all AKS that are in file DF. Fill those with 1; fill rest with 0
+
+            # dp_cad.fillna(1, inplace=True)
             dp_cad["Zeilen im Merge nach Zusammenführen"] = dp_cad["Anzahl Duplikate CAD-File"] * dp_cad["Anzahl Duplikate NPA-File"] * dp_cad["Anzahl Duplikate BST-File"] * dp_cad["Anzahl Duplikate FLT-File"]
             dp_cad = dp_cad.merge(elimination_info, on="AKS-Nummer", how='outer')
-            dp_cad.fillna(0, inplace=True)
+            # dp_cad.fillna(0, inplace=True)
             dp_cad["Verbleibende Zeilen im Merge"] = dp_cad["Zeilen im Merge nach Zusammenführen"] - dp_cad["Zeilen die durch Zusatzattribute eliminiert werden konnten"]
             dp_cad.to_excel(writer, sheet_name=f"AKS-Duplikate")
 
