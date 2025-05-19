@@ -170,17 +170,19 @@ if st.button("Alle Daten laden", type="primary"):
                 "Anzahl Duplikate HM-File"
             ]
 
-            def fill_empty(x):
-                if isna(x):
-                    if x in list(l[i]["merge"].values):
-                        return 1
-                    else:
-                        return 0
-                return x
-
-
             for i, column in enumerate(c):
-                dp_cad[column] = dp_cad[column].apply(fill_empty)
+
+                def fill_empty(x, aks):
+                    if isna(x):
+                        if aks in list(l[:-1][i]["merge"].values):
+                            return 1
+                        else:
+
+                            return 0
+                    return int(x)
+
+                for j in range(len(dp_cad)):
+                    dp_cad.loc[dp_cad.iloc[j].name, column] = fill_empty(dp_cad[column].iloc[j], dp_cad.iloc[j].name)
 
             # CREATE FINAL COLUMN
 
