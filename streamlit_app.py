@@ -187,7 +187,7 @@ if st.button("Alle Daten laden", type="primary"):
             # CREATE FINAL COLUMN
 
             for j in range(len(dp_cad)):
-                dp_cad.loc[dp_cad.iloc[j].name, "Zeilen im Merge nach Zusammenführen"] = prod([v for v in dp_cad.iloc[j].to_list() if v > 1])
+                dp_cad.loc[dp_cad.iloc[j].name, "Zeilen im Merge nach Zusammenführen"] = prod([v for v in dp_cad.iloc[j].to_list() if v > 1]) if dp_cad["Anzahl Duplikate CAD-File"].iloc[j] > 0 else 0
 
             dp_cad = dp_cad.merge(elimination_info, on="AKS-Nummer", how='outer')
 
