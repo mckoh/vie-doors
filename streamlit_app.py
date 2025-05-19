@@ -160,8 +160,8 @@ if st.button("Alle Daten laden", type="primary"):
 
             # FILL THE EMPTY CELLS
 
-            duplicate_aks_numbers = dp_cad["AKS-Nummer"].values
-
+            dp_cad.index = dp_cad["AKS-Nummer"]
+            dp_cad.drop("AKS-Nummer", axis=1, inplace=True)
             c = [
                 "Anzahl Duplikate CAD-File",
                 "Anzahl Duplikate NPA-File",
