@@ -172,7 +172,7 @@ if st.button("Alle Daten laden", type="primary"):
 
             def fill_empty(x):
                 if isna(x):
-                    if x in l[i]["merge"]:
+                    if x in list(l[i]["merge"].values):
                         return 1
                     else:
                         return 0
