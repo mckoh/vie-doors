@@ -5,7 +5,7 @@ Date: Jan. 2025
 """
 
 
-from pandas import merge
+from pandas import merge, notna
 
 
 MERGE_TYPES = {
@@ -13,7 +13,6 @@ MERGE_TYPES = {
     "right_only": "Diese Zeile, identifiziert durch ihre AKS-Nummer, war nur i in diesem Datenfile vorhanden, nicht aber im CAD-Datenfile.",
     "both": "Diese Zeile, identifiziert durch ihre AKS-Nummer, war in diesem Datenfile vorhanden und auch im CAD-Datenfile."
 }
-
 
 class FileMerger:
 

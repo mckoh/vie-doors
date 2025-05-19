@@ -1,9 +1,20 @@
 import streamlit as st
 from io import BytesIO
-from pandas import ExcelWriter, DataFrame
+from pandas import ExcelWriter, DataFrame, notna, isna
+from math import prod
 from viedoors import BSTLoader, FLTLoader, HMLoader, FMLoader, count_duplicates
 from viedoors import CADLoader, NPALoader, FileMerger, eliminate_duplicates
 
+
+REDUCED_COLS = [
+    "NPA___feuerwider-stand",
+    "NPA___flucht__ja_nein",
+    "HM___uz_6_steu", # (Wenn in der Zelle ein Inhalt ist, dann soll ein Ja angezeigt sein)
+    "NPA___nottaster__ja_nein",
+    "CAD___integration_aks",
+    "NPA___fluegel__1_2_3",
+    "NPA___sz_magnet__ja_nein"
+]
 
 st.set_page_config(
     page_title="VIE Door Integrator",
@@ -85,6 +96,28 @@ if st.button("Alle Daten laden", type="primary"):
             "Zeilen die durch Zusatzattribute eliminiert werden konnten": info.values()
         })
 
+        merge["HM___uz_6_steu"] = merge["HM___uz_6_steu"].map(
+            lambda x: "Ja" if notna(x) else ""
+        )
+
+        output = merge[REDUCED_COLS].copy()
+        output["Selbsschließend"] = ""
+
+        clean_column_names = [
+            "Feuerwiderstand",
+            "Fluchttüre Ja/Nein",
+            "UZ6/Steu. Ja/Nein",
+            "Nottaster Ja/Nein",
+            "AKS Nummer",
+            "Anzahl Flügel 1/2/S",
+            "SZ-Magnet Ja/Nein",
+            "Selbstschließend"
+        ]
+
+        output.columns = clean_column_names
+
+        output = output.iloc[:, [4, 0, 1, 2, 3, 5, 6, 7]]
+
 # DOWNLOAD
 # -----------------------------------------------------------------------------------
 
@@ -92,7 +125,7 @@ if st.button("Alle Daten laden", type="primary"):
 
         with ExcelWriter(buffer, engine='xlsxwriter') as writer:
 
-            merge.to_excel(writer, sheet_name='Merge')
+            output.to_excel(writer, sheet_name='Merge')
 
             # CAD duplicates are written to a separate sheet
             dp_cad = count_duplicates(df_cad)
@@ -124,11 +157,44 @@ if st.button("Alle Daten laden", type="primary"):
                     dp.rename(columns={"Anzahl Duplikate": f"Anzahl Duplikate {name}"}, inplace=True)
                     dp_cad = dp_cad.merge(dp, on='AKS-Nummer', how='outer')
 
-            dp_cad.fillna(1, inplace=True)
-            dp_cad["Zeilen im Merge nach Zusammenführen"] = dp_cad["Anzahl Duplikate CAD-File"] * dp_cad["Anzahl Duplikate NPA-File"] * dp_cad["Anzahl Duplikate BST-File"] * dp_cad["Anzahl Duplikate FLT-File"]
+
+            # FILL THE EMPTY CELLS
+
+            dp_cad.index = dp_cad["AKS-Nummer"]
+            dp_cad.drop("AKS-Nummer", axis=1, inplace=True)
+            c = [
+                "Anzahl Duplikate CAD-File",
+                "Anzahl Duplikate NPA-File",
+                "Anzahl Duplikate BST-File",
+                "Anzahl Duplikate FLT-File",
+                "Anzahl Duplikate HM-File"
+            ]
+
+            for i, column in enumerate(c):
+
+                def fill_empty(x, aks):
+                    if isna(x):
+                        if aks in list(l[:-1][i]["merge"].values):
+                            return 1
+                        else:
+
+                            return 0
+                    return int(x)
+
+                for j in range(len(dp_cad)):
+                    dp_cad.loc[dp_cad.iloc[j].name, column] = fill_empty(dp_cad[column].iloc[j], dp_cad.iloc[j].name)
+
+            # CREATE FINAL COLUMN
+
+            for j in range(len(dp_cad)):
+                dp_cad.loc[dp_cad.iloc[j].name, "Zeilen im Merge nach Zusammenführen"] = prod([v for v in dp_cad.iloc[j].to_list() if v > 1]) if dp_cad["Anzahl Duplikate CAD-File"].iloc[j] > 0 else 0
+
             dp_cad = dp_cad.merge(elimination_info, on="AKS-Nummer", how='outer')
+
             dp_cad.fillna(0, inplace=True)
+
             dp_cad["Verbleibende Zeilen im Merge"] = dp_cad["Zeilen im Merge nach Zusammenführen"] - dp_cad["Zeilen die durch Zusatzattribute eliminiert werden konnten"]
+
             dp_cad.to_excel(writer, sheet_name=f"AKS-Duplikate")
 
 
