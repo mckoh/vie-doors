@@ -1,6 +1,7 @@
 import streamlit as st
 from io import BytesIO
-from pandas import ExcelWriter, DataFrame, notna
+from pandas import ExcelWriter, DataFrame, notna, isna
+from math import prod
 from viedoors import BSTLoader, FLTLoader, HMLoader, FMLoader, count_duplicates
 from viedoors import CADLoader, NPALoader, FileMerger, eliminate_duplicates
 
@@ -156,15 +157,40 @@ if st.button("Alle Daten laden", type="primary"):
                     dp.rename(columns={"Anzahl Duplikate": f"Anzahl Duplikate {name}"}, inplace=True)
                     dp_cad = dp_cad.merge(dp, on='AKS-Nummer', how='outer')
 
-            # TODO Dev: wie können wir das problem lösen. Aktuell wird bei den Duplikaten immer 1 angeschrieben, auch wenn die AKS im betreffenden File nicht vorkam
 
-            # Solution: Iterate Files and filter Duplicate DF (loc) for all AKS that are in file DF. Fill those with 1; fill rest with 0
+            # FILL THE EMPTY CELLS
 
-            # dp_cad.fillna(1, inplace=True)
-            dp_cad["Zeilen im Merge nach Zusammenführen"] = dp_cad["Anzahl Duplikate CAD-File"] * dp_cad["Anzahl Duplikate NPA-File"] * dp_cad["Anzahl Duplikate BST-File"] * dp_cad["Anzahl Duplikate FLT-File"]
+            duplicate_aks_numbers = dp_cad["AKS-Nummer"].values
+
+            c = [
+                "Anzahl Duplikate CAD-File",
+                "Anzahl Duplikate NPA-File",
+                "Anzahl Duplikate BST-File",
+                "Anzahl Duplikate FLT-File",
+                "Anzahl Duplikate HM-File"
+            ]
+
+            def fill_empty(x):
+                if isna(x):
+                    if x in l[i]["merge"]:
+                        return 1
+                    else:
+                        return 0
+                return x
+
+
+            for i, column in enumerate(c):
+                dp_cad[column] = dp_cad[column].apply(fill_empty)
+
+            # CREATE FINAL COLUMN
+
+            dp_cad["Zeilen im Merge nach Zusammenführen"] = prod([v for v in dp_cad.iloc[0].to_list()[1:] if v > 1])
             dp_cad = dp_cad.merge(elimination_info, on="AKS-Nummer", how='outer')
-            # dp_cad.fillna(0, inplace=True)
+
+            dp_cad.fillna(0, inplace=True)
+
             dp_cad["Verbleibende Zeilen im Merge"] = dp_cad["Zeilen im Merge nach Zusammenführen"] - dp_cad["Zeilen die durch Zusatzattribute eliminiert werden konnten"]
+
             dp_cad.to_excel(writer, sheet_name=f"AKS-Duplikate")
 
 
