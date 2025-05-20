@@ -117,8 +117,9 @@ class FileMerger:
     def get_data_merge(self, eliminate=False):
         """Returns the finally merged data as pandas.DataFrame.
 
-        :return: Merged data.
-        :rtype: pandas.DataFrame
+        :param eliminate: Switch that lets you start duplicate elimination
+        :return: Merged data (if eliminate: elimination info)
+        :rtype: pandas.DataFrame (if eliminate: DataFrame)
         """
         if eliminate:
             merge, info = eliminate_duplicates(self.data_merge, "CAD___gar_tuernummer_alt", "NPA___alte_tuernummer")

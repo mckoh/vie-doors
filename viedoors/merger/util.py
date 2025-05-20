@@ -4,7 +4,18 @@ Author: Michael Kohlegger
 Date: Mar. 2025
 """
 
-from pandas import concat, DataFrame
+from pandas import concat, DataFrame, notna
+
+
+REDUCED_COLS = [
+    "NPA___feuerwider-stand",
+    "NPA___flucht__ja_nein",
+    "HM___uz_6_steu", # (Wenn in der Zelle ein Inhalt ist, dann soll ein Ja angezeigt sein)
+    "NPA___nottaster__ja_nein",
+    "CAD___integration_aks",
+    "NPA___fluegel__1_2_3",
+    "NPA___sz_magnet__ja_nein"
+]
 
 
 def eliminate_duplicates(merge, col_a, col_b, elimination_info=None):
@@ -78,3 +89,35 @@ def count_duplicates(dataframe):
     duplicate_entries["AKS-Nummer"] = duplicate_entries.index
     duplicate_entries.index = range(len(duplicate_entries))
     return duplicate_entries[["AKS-Nummer", "Anzahl Duplikate"]].loc[duplicate_entries["Anzahl Duplikate"]>1]
+
+
+def clean_merge(merge):
+    """Lets you clean-up a completed merge to get an outputable dataframe
+
+    :param merge: The final merge to be cleaned
+    :type merge: pandas.DataFrame
+    :return: The cleaned merge
+    :rtype: pandas.DataFrame
+    """
+
+    merge["HM___uz_6_steu"] = merge["HM___uz_6_steu"].map(
+        lambda x: "Ja" if notna(x) else ""
+    )
+
+    output = merge[REDUCED_COLS].copy()
+    output["Selbsschließend"] = ""
+
+    clean_column_names = [
+        "Feuerwiderstand",
+        "Fluchttüre Ja/Nein",
+        "UZ6/Steu. Ja/Nein",
+        "Nottaster Ja/Nein",
+        "AKS Nummer",
+        "Anzahl Flügel 1/2/S",
+        "SZ-Magnet Ja/Nein",
+        "Selbstschließend"
+    ]
+
+    output.columns = clean_column_names
+
+    return output.iloc[:, [4, 0, 1, 2, 3, 5, 6, 7]]
