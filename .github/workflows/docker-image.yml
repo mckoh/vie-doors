@@ -15,11 +15,11 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Build image
-      run: docker build . --no-cache --file Dockerfile --tag vie-doors:$(date +%s)
+      run: docker build . --no-cache --file Dockerfile --tag vie-doors
 
     - name: Store artifact in GitHub
       uses: actions/upload-artifact@v4
       with:
         name: vie-doors
-        path: target/vie-doors
+        path: /var/lib/docker/vie-doors
         retention-days: 1
