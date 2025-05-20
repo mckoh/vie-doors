@@ -13,15 +13,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout project
+    - name: Checkout Project
       uses: actions/checkout@v4
 
-    - name: Build image
+    - name: Build Docker Image
       run: docker build . --no-cache --file Dockerfile --tag vie-doors
 
-    - name: Store artifact in GitHub
+    - name: Save Docker Image
+      run: docker save vie-doors -o vie-doors.tar
+
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: vie-doors
-        path: /var/lib/docker
+        path: vie-doors.tar
         retention-days: 1
