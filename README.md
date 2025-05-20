@@ -1,5 +1,7 @@
 # VIE-Doors Integration ✈
 
+[![Docker Image CI](https://github.com/mckoh/vie-doors/actions/workflows/docker-image.yml/badge.svg)](https://github.com/mckoh/vie-doors/actions/workflows/docker-image.yml)
+
 ![Beschriftung Brandschutztüre](docs/bst.jpg)
 
 Dieses Repository enthält Python Code zur Integration von Anlagendaten über Brandschutz- und Fluchttüren. Der Gesamte Code befindet sich im Modulordner `viedoors`. Die zu integrierenden Daten befinden sich im Ordner `data`. Als Frontend dient eine Streamlit-App, die wie folgt gestartet werden kann:
