@@ -84,17 +84,10 @@ if st.button("Alle Daten laden", type="primary"):
 # -----------------------------------------------------------------------------------
 
         merger = FileMerger(files=l, how="left", column="merge")
-        merge = merger.get_data_merge()
+        merge, elimination_info = merger.get_data_merge(eliminate=True)
 
-        merge, info = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "NPA___alte_tuernummer")
-        merge, info = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "HM___tuer_nr_alt", info)
-        merge, info = eliminate_duplicates(merge, "CAD___gar_flucht_tuer_nr", "NPA___fluchtwegs_tuer_nr", info)
-        merge, info = eliminate_duplicates(merge, "NPA___alte_tuernummer", "FM___brandmeldernr", info)
-
-        elimination_info = DataFrame({
-            "AKS-Nummer": info.keys(),
-            "Zeilen die durch Zusatzattribute eliminiert werden konnten": info.values()
-        })
+# CLEANING
+# -----------------------------------------------------------------------------------
 
         merge["HM___uz_6_steu"] = merge["HM___uz_6_steu"].map(
             lambda x: "Ja" if notna(x) else ""

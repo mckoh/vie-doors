@@ -5,7 +5,8 @@ Date: Jan. 2025
 """
 
 
-from pandas import merge, notna
+from pandas import merge, notna, DataFrame
+from .util import eliminate_duplicates
 
 
 MERGE_TYPES = {
@@ -39,6 +40,7 @@ class FileMerger:
         self.data_merge = files[0]
         self.how = how
         self.column = column
+
         self.__merge()
 
     def __merge(self):
@@ -112,13 +114,22 @@ class FileMerger:
         return output.iloc[:,n_cols_of_first:]
 
 
-    def get_data_merge(self):
+    def get_data_merge(self, eliminate=False):
         """Returns the finally merged data as pandas.DataFrame.
 
         :return: Merged data.
         :rtype: pandas.DataFrame
         """
+        if eliminate:
+            merge, info = eliminate_duplicates(self.data_merge, "CAD___gar_tuernummer_alt", "NPA___alte_tuernummer")
+            merge, info = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "HM___tuer_nr_alt", info)
+            merge, info = eliminate_duplicates(merge, "CAD___gar_flucht_tuer_nr", "NPA___fluchtwegs_tuer_nr", info)
+            merge, info = eliminate_duplicates(merge, "NPA___alte_tuernummer", "FM___brandmeldernr", info)
 
+            return merge, DataFrame({
+                "AKS-Nummer": info.keys(),
+                "Zeilen die durch Zusatzattribute eliminiert werden konnten": info.values()
+            })
         return self.data_merge
 
 
