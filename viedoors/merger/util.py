@@ -121,3 +121,17 @@ def clean_merge(merge):
     output.columns = clean_column_names
 
     return output.iloc[:, [4, 0, 1, 2, 3, 5, 6, 7]]
+
+
+def find_cad_only(merge):
+    """Finds all AKS numbers in the merge that are only present in CAD
+
+    :param merge: A Merge Dataframe
+    :type merge: pandas.DataFrame
+    :return: The located AKS-Numbers as DataFrame
+    :rtype: pandas.DataFrame
+    """
+
+    cad_only = merge.loc[merge[merge.columns[16:]].isna().all(axis=1)][["merge"]]
+    cad_only.columns = ["AKS-Nummer"]
+    return cad_only

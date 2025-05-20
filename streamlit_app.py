@@ -4,7 +4,7 @@ from pandas import ExcelWriter, DataFrame, notna, isna
 from math import prod
 from viedoors import BSTLoader, FLTLoader, HMLoader, FMLoader, count_duplicates
 from viedoors import CADLoader, NPALoader, FileMerger, eliminate_duplicates
-from viedoors import clean_merge, calculate_duplicate_info
+from viedoors import clean_merge, calculate_duplicate_info, find_cad_only
 
 
 st.set_page_config(
@@ -84,11 +84,16 @@ if st.button("Alle Daten laden", type="primary"):
 
         with ExcelWriter(buffer, engine='xlsxwriter') as writer:
 
+            merge.to_excel(writer, sheet_name="Merge Gesamt")
+
             output = clean_merge(merge)
-            output.to_excel(writer, sheet_name='Merge')
+            output.to_excel(writer, sheet_name='Merge Klein')
 
             dp_cad = calculate_duplicate_info(df_cad, df_npa, df_bst, df_flt, df_hm, elimination_info)
             dp_cad.to_excel(writer, sheet_name=f"AKS-Duplikate")
+
+            cad_only = find_cad_only(merge)
+            cad_only.to_excel(writer, sheet_name="Nur-CAD AKS-Nummern")
 
             # CAD duplicates are written to a separate sheet
 
