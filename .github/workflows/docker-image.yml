@@ -8,11 +8,16 @@ on:
 
 jobs:
 
-  build:
-
+  build_and_upload:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --no-cache --file Dockerfile --tag streamlit_vie_doors:$(date +%s)
+    - name: Checkout project
+      uses: actions/checkout@v2
+
+    - name: Build image
+      run: docker build . --no-cache --file Dockerfile --tag vie-doors:$(date +%s)
+
+    - name: Upload image
+      uses: ishworkh/docker-image-artifact-upload@v2.0.1
+      with:
+        image: "vie-doors:latest"
