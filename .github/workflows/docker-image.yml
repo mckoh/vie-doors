@@ -9,10 +9,12 @@ on:
 jobs:
 
   build_and_upload:
+
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout project
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Build image
       run: docker build . --no-cache --file Dockerfile --tag vie-doors
@@ -21,5 +23,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: vie-doors
-        path: /var/lib/docker/vie-doors
+        path: /var/lib/docker
         retention-days: 1
