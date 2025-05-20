@@ -17,7 +17,9 @@ jobs:
     - name: Build image
       run: docker build . --no-cache --file Dockerfile --tag vie-doors:$(date +%s)
 
-    - name: Upload image
-      uses: ishworkh/docker-image-artifact-upload@v2.0.1
+    - name: Store artifact in GitHub
+      uses: actions/upload-artifact@v4
       with:
-        image: "vie-doors:latest"
+        name: vie-doors
+        path: target/vie-doors
+        retention-days: 1
