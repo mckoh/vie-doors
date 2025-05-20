@@ -4,7 +4,7 @@ from pandas import ExcelWriter, DataFrame, notna, isna
 from math import prod
 from viedoors import BSTLoader, FLTLoader, HMLoader, FMLoader, count_duplicates
 from viedoors import CADLoader, NPALoader, FileMerger, eliminate_duplicates
-from viedoors import clean_merge
+from viedoors import clean_merge, calculate_duplicate_info
 
 
 st.set_page_config(
@@ -77,11 +77,6 @@ if st.button("Alle Daten laden", type="primary"):
         merger = FileMerger(files=l, how="left", column="merge")
         merge, elimination_info = merger.get_data_merge(eliminate=True)
 
-# CLEANING
-# -----------------------------------------------------------------------------------
-
-        output = clean_merge(merge=merge)
-
 # DOWNLOAD
 # -----------------------------------------------------------------------------------
 
@@ -89,78 +84,31 @@ if st.button("Alle Daten laden", type="primary"):
 
         with ExcelWriter(buffer, engine='xlsxwriter') as writer:
 
+            output = clean_merge(merge)
             output.to_excel(writer, sheet_name='Merge')
 
+            dp_cad = calculate_duplicate_info(df_cad, df_npa, df_bst, df_flt, df_hm, elimination_info)
+            dp_cad.to_excel(writer, sheet_name=f"AKS-Duplikate")
+
             # CAD duplicates are written to a separate sheet
-            dp_cad = count_duplicates(df_cad)
-            dp_cad.rename(columns={"Anzahl Duplikate": f"Anzahl Duplikate CAD-File"}, inplace=True)
 
             for i, dataset in enumerate([df_npa, df_bst, df_flt, df_hm, df_fm]):
 
-                name = dataset.columns[0].split("___")[0]+"-File"
-                fm = FileMerger(files=[df_cad, dataset], how="inner")
+                    name = dataset.columns[0].split("___")[0]+"-File"
+                    fm = FileMerger(files=[df_cad, dataset], how="inner")
 
-                a = len(dataset)
-                b = len(fm.get_data_merge().drop_duplicates())
-                quotient = round(b / a * 100, 2)
-                delta =round(quotient-100, 2)
+                    a = len(dataset)
+                    b = len(fm.get_data_merge().drop_duplicates())
+                    quotient = round(b / a * 100, 2)
+                    delta =round(quotient-100, 2)
 
-                with col_2:
-                    st.subheader(f"{name} Übereinstimmung mit CAD", divider=True)
-                    st.write(f"Von {a} Datensätzen im {name} konnten {b} Datensätze erfolgreich mit dem CAD-Datenfile gematcht werden ({quotient}%). Vollständige Duplikate wuden von diesem Vergleich ausgeschlossen.")
-                    st.metric(label=f"{name}", value=f"{quotient}%", delta=f"{delta}%.", border=True, label_visibility="collapsed")
+                    with col_2:
+                        st.subheader(f"{name} Übereinstimmung mit CAD", divider=True)
+                        st.write(f"Von {a} Datensätzen im {name} konnten {b} Datensätze erfolgreich mit dem CAD-Datenfile gematcht werden ({quotient}%). Vollständige Duplikate wuden von diesem Vergleich ausgeschlossen.")
+                        st.metric(label=f"{name}", value=f"{quotient}%", delta=f"{delta}%.", border=True, label_visibility="collapsed")
 
-                    nm = fm.find_non_matching_rows()
-                    nm.to_excel(writer, sheet_name=f"{name} ohne AKS-Match")
-
-                # This step is scipped for filemaker, as the duplicate
-                # detection process does not work sufficiently there
-                # FM has i = 5
-                if i < 4:
-                    dp = count_duplicates(dataset)
-                    dp.rename(columns={"Anzahl Duplikate": f"Anzahl Duplikate {name}"}, inplace=True)
-                    dp_cad = dp_cad.merge(dp, on='AKS-Nummer', how='outer')
-
-
-            # FILL THE EMPTY CELLS
-
-            dp_cad.index = dp_cad["AKS-Nummer"]
-            dp_cad.drop("AKS-Nummer", axis=1, inplace=True)
-            c = [
-                "Anzahl Duplikate CAD-File",
-                "Anzahl Duplikate NPA-File",
-                "Anzahl Duplikate BST-File",
-                "Anzahl Duplikate FLT-File",
-                "Anzahl Duplikate HM-File"
-            ]
-
-            for i, column in enumerate(c):
-
-                def fill_empty(x, aks):
-                    if isna(x):
-                        if aks in list(l[:-1][i]["merge"].values):
-                            return 1
-                        else:
-
-                            return 0
-                    return int(x)
-
-                for j in range(len(dp_cad)):
-                    dp_cad.loc[dp_cad.iloc[j].name, column] = fill_empty(dp_cad[column].iloc[j], dp_cad.iloc[j].name)
-
-            # CREATE FINAL COLUMN
-
-            for j in range(len(dp_cad)):
-                dp_cad.loc[dp_cad.iloc[j].name, "Zeilen im Merge nach Zusammenführen"] = prod([v for v in dp_cad.iloc[j].to_list() if v > 1]) if dp_cad["Anzahl Duplikate CAD-File"].iloc[j] > 0 else 0
-
-            dp_cad = dp_cad.merge(elimination_info, on="AKS-Nummer", how='outer')
-
-            dp_cad.fillna(0, inplace=True)
-
-            dp_cad["Verbleibende Zeilen im Merge"] = dp_cad["Zeilen im Merge nach Zusammenführen"] - dp_cad["Zeilen die durch Zusatzattribute eliminiert werden konnten"]
-
-            dp_cad.to_excel(writer, sheet_name=f"AKS-Duplikate")
-
+                        nm = fm.find_non_matching_rows()
+                        nm.to_excel(writer, sheet_name=f"{name} ohne AKS-Match")
 
         st.download_button(
             label="Zusammengeführte Daten als Excel herunterladen",
