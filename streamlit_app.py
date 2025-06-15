@@ -115,6 +115,11 @@ if st.button("Alle Daten laden", type="primary"):
                         nm = fm.find_non_matching_rows()
                         nm.to_excel(writer, sheet_name=f"{name} ohne AKS-Match")
 
+                    # TODO Dev: wir würden einen Reiter mit allen Türen der importierten HM Liste benötigen (Haltemagnet Import)
+                    if i == 3:
+                        dataset.to_excel(writer, sheet_name="Haltemagnet Import")
+
+
         st.download_button(
             label="Zusammengeführte Daten als Excel herunterladen",
             data=buffer,
