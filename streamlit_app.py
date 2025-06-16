@@ -1,6 +1,6 @@
 import streamlit as st
 from io import BytesIO
-from pandas import ExcelWriter, DataFrame, notna, isna
+from pandas import ExcelWriter, DataFrame, notna, isna, merge as pandas_merge
 from math import prod
 from viedoors import BSTLoader, FLTLoader, HMLoader, FMLoader, count_duplicates
 from viedoors import CADLoader, NPALoader, FileMerger, eliminate_duplicates
@@ -77,6 +77,16 @@ if st.button("Alle Daten laden", type="primary"):
         merger = FileMerger(files=l, how="left", column="merge")
         merge, elimination_info = merger.get_data_merge(eliminate=True)
 
+# NPA AND FM Merging
+# -----------------------------------------------------------------------------------
+
+        npa_fm_merge = pandas_merge(
+            left=df_npa.loc[df_npa["npa_fm_match"].notna()],
+            right=df_fm.loc[df_fm["npa_fm_match"].notna()],
+            on="npa_fm_match",
+            how="inner"
+        )
+
 # DOWNLOAD
 # -----------------------------------------------------------------------------------
 
@@ -94,6 +104,8 @@ if st.button("Alle Daten laden", type="primary"):
 
             cad_only = find_cad_only(merge)
             cad_only.to_excel(writer, sheet_name="Nur-CAD AKS-Nummern")
+
+            npa_fm_merge.to_excel(writer, sheet_name="NPA-FM-Merge SchlossNr")
 
             # CAD duplicates are written to a separate sheet
 
@@ -114,6 +126,11 @@ if st.button("Alle Daten laden", type="primary"):
 
                         nm = fm.find_non_matching_rows()
                         nm.to_excel(writer, sheet_name=f"{name} ohne AKS-Match")
+
+                    # TODO Dev: wir würden einen Reiter mit allen Türen der importierten HM Liste benötigen (Haltemagnet Import)
+                    if i == 3:
+                        dataset.to_excel(writer, sheet_name="Haltemagnet Import")
+
 
         st.download_button(
             label="Zusammengeführte Daten als Excel herunterladen",

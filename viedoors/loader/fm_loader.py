@@ -27,6 +27,10 @@ class FMLoader:
     def __init__(self):
         self.data = read_pickle("static/fm.pkl")
 
+        # TODO Dev: #30 match the NPA and the FM data using Schlussnummer column
+        self.data["npa_fm_match"] = self.data["FM___bauteil"]+"-"+self.data["FM___ebene"]+"-"+self.data["FM___topnr"].astype(str)
+
+
     def get_data(self, prefixed=True):
         """Returns the stored DataFrame and prefixes all columns with title"""
 
