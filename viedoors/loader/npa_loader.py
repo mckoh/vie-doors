@@ -54,3 +54,34 @@ class NPALoader(ExcelLoader):
 
         # Delete multiple header rows that are copied into the data
         self.data.drop(self.data.loc[self.data["objekt"]=="Objekt"].index, axis=0, inplace=True)
+
+        # TODO Dev: #30 match the NPA and the FM data using Schlussnummer column
+        self.data["SN1"] = self.data["schlossernummer"].map(lambda x: x.replace(" ", "")+"//").map(lambda x: x.split("/")[0])
+        self.data["SN2"] = self.data["schlossernummer"].map(lambda x: x.replace(" ", "")+"//").map(lambda x: x.split("/")[1]).map(level_mapper)
+        self.data["SN3"] = self.data["schlossernummer"].map(lambda x: x.replace(" ", "")+"//").map(lambda x: x.split("/")[2])
+        self.data["npa_fm_match"] = self.data["SN1"]+"-"+self.data["SN2"]+"-"+self.data["SN3"]
+        self.data.drop("SN1", axis=1, inplace=True)
+        self.data.drop("SN2", axis=1, inplace=True)
+        self.data.drop("SN3", axis=1, inplace=True)
+
+
+    def get_data(self, prefixed=False):
+        """Returns the stored DataFrame and prefixes all columns with title
+
+        :param prefixed: Boolean attribute wether to include title prefix.
+        :type prefixed: bool
+        :return: Data as pandas.DataFrame.
+        :rtype: pandas.DataFrame
+        """
+
+        if prefixed:
+            df = self.data.copy()
+            df.columns = [self.title+"___"+c for c in self.data.columns]
+            df["merge"] = df[self.title+"___"+"integration_aks"]
+            df["npa_fm_match"] = df[self.title+"___"+"npa_fm_match"]
+        else:
+            df = self.data.copy()
+            df["merge"] = df["integration_aks"]
+            df["npa_fm_match"] = df["npa_fm_match"]
+
+        return df
