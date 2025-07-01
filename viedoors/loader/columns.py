@@ -72,18 +72,18 @@ npa_columns = [
     "schlossernummer",
     "hoehe_cm",
     "breite_cm",
-    "zylinder__Z_B_WC_S",
+    # "zylinder__Z_B_WC_S", # DELETED IN ITERATION 6
     "fluegel__1_2_3",
     "hersteller",
-    "seriennummer",
+    # "seriennummer", # DELETED IN ITERATION 6
     "feuerwider-stand",
     "brand-schutz-grenze__ja_nein",
     "flucht__ja_nein",
     "fluchtwegs_tuer_nr",
-    "panik__d_stk",
+    # "panik__d_stk", # DELETED IN ITERATION 6
     "nottaster__ja_nein",
     "offenhalte-magnet__ja_nein",
-    "taster für Schließung__ja_nein",
+    # "taster für Schließung__ja_nein", # DELETED IN ITERATION 6
     "vorsicherung__ja_nein",
     "sz_magnet__ja_nein",
     "Bemerkung"
