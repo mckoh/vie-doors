@@ -14,7 +14,8 @@ REDUCED_COLS = [
     "NPA___nottaster__ja_nein",
     "CAD___integration_aks",
     "NPA___fluegel__1_2_3",
-    "NPA___sz_magnet__ja_nein"
+    "NPA___sz_magnet__ja_nein",
+    "CAD___gar_tuernummer_alt", # in iteration 08 hinzugefügt
 ]
 
 
@@ -115,12 +116,13 @@ def clean_merge(merge):
         "AKS Nummer",
         "Anzahl Flügel 1/2/S",
         "SZ-Magnet Ja/Nein",
-        "Selbstschließend"
+        "Türnummer Alt", # in iteration 08 hinzugefügt
+        "Selbstschließend",
     ]
 
     output.columns = clean_column_names
 
-    return output.iloc[:, [4, 0, 1, 2, 3, 5, 6, 7]]
+    return output.iloc[:, [4, 0, 1, 2, 3, 7, 5, 6]]
 
 
 def find_cad_only(merge):
