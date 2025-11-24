@@ -41,7 +41,7 @@ class ExcelLoader:
 
         self.data = read_excel_all_sheets(
             excel_file=self.file,
-            dtype=object,
+            dtype=str,
             *args,
             **kwargs
         )
