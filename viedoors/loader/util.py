@@ -230,7 +230,7 @@ def read_excel_all_sheets(excel_file, is_flt=False, *args, **kwargs):
     else:
         base = read_excel(excel_file, *args, **kwargs)
 
-    return base
+    return base.astype(str)
 
 
 def eliminate_duplicates(merge, col_a, col_b):
