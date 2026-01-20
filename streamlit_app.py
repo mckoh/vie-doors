@@ -99,6 +99,14 @@ if st.button("Alle Daten laden", type="primary"):
             output = clean_merge(merge)
             output.to_excel(writer, sheet_name='Merge Klein')
 
+            # TODO Dev: Test this part as error correction START
+            df_cad = df_cad.astype(str)
+            df_npa = df_npa.astype(str)
+            df_bst = df_bst.astype(str)
+            df_flt = df_flt.astype(str)
+            df_hm = df_hm.astype(str)
+            # TODO Dev: Test this part as error correction END
+
             dp_cad = calculate_duplicate_info(df_cad, df_npa, df_bst, df_flt, df_hm, elimination_info)
             dp_cad.to_excel(writer, sheet_name=f"AKS-Duplikate")
 
