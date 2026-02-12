@@ -4,6 +4,7 @@ data
 *.xls
 matching
 non_matching
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
