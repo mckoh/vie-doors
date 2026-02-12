@@ -123,9 +123,11 @@ class FileMerger:
         """
         if eliminate:
             merge, info = eliminate_duplicates(self.data_merge, "CAD___gar_tuernummer_alt", "NPA___alte_tuernummer")
-            merge, info = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "HM___tuer_nr_alt", info)
-            merge, info = eliminate_duplicates(merge, "CAD___gar_flucht_tuer_nr", "NPA___fluchtwegs_tuer_nr", info)
-            merge, info = eliminate_duplicates(merge, "NPA___alte_tuernummer", "FM___brandmeldernr", info)
+
+            #TODO: Check this as part of "final_fix"
+            # merge, info = eliminate_duplicates(merge, "CAD___gar_tuernummer_alt", "HM___tuer_nr_alt", info)
+            # merge, info = eliminate_duplicates(merge, "CAD___gar_flucht_tuer_nr", "NPA___fluchtwegs_tuer_nr", info)
+            # merge, info = eliminate_duplicates(merge, "NPA___alte_tuernummer", "FM___brandmeldernr", info)
 
             return merge, DataFrame({
                 "AKS-Nummer": info.keys(),

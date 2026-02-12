@@ -3,14 +3,14 @@ from pandas import isna
 from math import prod
 
 
-def calculate_duplicate_info(df_cad, df_npa, df_bst, df_flt, df_hm, elimination_info):
+def calculate_duplicate_info(df_cad, df_npa, elimination_info):
 
-    l = [df_cad, df_npa, df_bst, df_flt, df_hm]
+    l = [df_cad, df_npa]
 
     dp_cad = count_duplicates(df_cad)
     dp_cad.rename(columns={"Anzahl Duplikate": f"Anzahl Duplikate CAD-File"}, inplace=True)
 
-    for i, dataset in enumerate([df_npa, df_bst, df_flt, df_hm]):
+    for i, dataset in enumerate([df_npa]):
 
         name = dataset.columns[0].split("___")[0]+"-File"
         dp = count_duplicates(dataset)
@@ -24,10 +24,7 @@ def calculate_duplicate_info(df_cad, df_npa, df_bst, df_flt, df_hm, elimination_
     # FILL THE EMPTY CELLS
     c = [
         "Anzahl Duplikate CAD-File",
-        "Anzahl Duplikate NPA-File",
-        "Anzahl Duplikate BST-File",
-        "Anzahl Duplikate FLT-File",
-        "Anzahl Duplikate HM-File"
+        "Anzahl Duplikate NPA-File"
     ]
 
     for i, column in enumerate(c):
@@ -49,10 +46,14 @@ def calculate_duplicate_info(df_cad, df_npa, df_bst, df_flt, df_hm, elimination_
     for j in range(len(dp_cad)):
         dp_cad.loc[dp_cad.iloc[j].name, "Zeilen im Merge nach Zusammenführen"] = prod([v for v in dp_cad.iloc[j].to_list() if v > 1]) if dp_cad["Anzahl Duplikate CAD-File"].iloc[j] > 0 else 0
 
-    dp_cad = dp_cad.merge(elimination_info, on="AKS-Nummer", how='outer')
+    try:
+        dp_cad = dp_cad.merge(elimination_info, on="AKS-Nummer", how='outer')
 
-    dp_cad.fillna(0, inplace=True)
+        dp_cad.fillna(0, inplace=True)
 
-    dp_cad["Verbleibende Zeilen im Merge"] = dp_cad["Zeilen im Merge nach Zusammenführen"] - dp_cad["Zeilen die durch Zusatzattribute eliminiert werden konnten"]
+        dp_cad["Verbleibende Zeilen im Merge"] = dp_cad["Zeilen im Merge nach Zusammenführen"] - dp_cad["Zeilen die durch Zusatzattribute eliminiert werden konnten"]
+
+    except:
+        print("None ")
 
     return dp_cad
