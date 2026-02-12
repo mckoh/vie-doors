@@ -46,10 +46,14 @@ def calculate_duplicate_info(df_cad, df_npa, elimination_info):
     for j in range(len(dp_cad)):
         dp_cad.loc[dp_cad.iloc[j].name, "Zeilen im Merge nach Zusammenführen"] = prod([v for v in dp_cad.iloc[j].to_list() if v > 1]) if dp_cad["Anzahl Duplikate CAD-File"].iloc[j] > 0 else 0
 
-    dp_cad = dp_cad.merge(elimination_info, on="AKS-Nummer", how='outer')
+    try:
+        dp_cad = dp_cad.merge(elimination_info, on="AKS-Nummer", how='outer')
 
-    dp_cad.fillna(0, inplace=True)
+        dp_cad.fillna(0, inplace=True)
 
-    dp_cad["Verbleibende Zeilen im Merge"] = dp_cad["Zeilen im Merge nach Zusammenführen"] - dp_cad["Zeilen die durch Zusatzattribute eliminiert werden konnten"]
+        dp_cad["Verbleibende Zeilen im Merge"] = dp_cad["Zeilen im Merge nach Zusammenführen"] - dp_cad["Zeilen die durch Zusatzattribute eliminiert werden konnten"]
+
+    except:
+        print("None ")
 
     return dp_cad
