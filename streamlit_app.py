@@ -1,9 +1,7 @@
 import streamlit as st
 from io import BytesIO
-from pandas import ExcelWriter, DataFrame, notna, isna, merge as pandas_merge
-from math import prod
-from viedoors import BSTLoader, FLTLoader, HMLoader, FMLoader, count_duplicates
-from viedoors import CADLoader, NPALoader, FileMerger, eliminate_duplicates
+from pandas import ExcelWriter, DataFrame, notna, isna
+from viedoors import CADLoader, NPALoader, FileMerger
 from viedoors import clean_merge, calculate_duplicate_info, find_cad_only
 
 
@@ -29,18 +27,6 @@ with col_1:
     st.subheader("NPA-File auswählen", divider=True)
     npa = st.file_uploader("NPA File", ["xlsx", "xls"], label_visibility="hidden")
 
-    st.subheader("Sisando BST-File auswählen", divider=True)
-    bst = st.file_uploader("Sisando BST File", ["xlsx", "xls"], label_visibility="hidden")
-
-    st.subheader("Sisando FLT-File auswählen", divider=True)
-    flt = st.file_uploader("Sisando FLT File", ["xlsx", "xls"], label_visibility="hidden")
-
-    st.subheader("Schrack HM-File auswählen", divider=True)
-    hm = st.file_uploader("Schrack HM File", "xls", label_visibility="hidden")
-
-    st.subheader("Filemaker Datenbank", divider=True)
-    st.markdown("Die Filemaker Datenbank muss hier nicht separat geladen werden. Da die Datenbank sämtliche Türen aller Objekte enthält, wurde sie direkt in die Applikation integriert und wird im Hintergrund automatisch geladen.")
-
 
 if st.button("Alle Daten laden", type="primary"):
 
@@ -48,8 +34,7 @@ if st.button("Alle Daten laden", type="primary"):
         st.subheader("CAD-File als Vergleichsbasis", divider=True)
         st.markdown("Die Datensätze aus dem CAD-File dienen im weiteren als Vergleichsgrundlage, um zu bestimmen, wieviele Übereinstimmungen in den einzelnen Datenfiles gefunden werden können. Dazu wird die Anzahl der Datensätze in den Datenfiles mit der Anzahl der Matches zwischen Datenfile und CAD-File bestimmt.")
 
-    if bst is not None and flt is not None and hm is not None and \
-        npa is not None and cad is not None:
+    if npa is not None and cad is not None:
 
         cad_data = CADLoader(file=cad, title="CAD")
         df_cad = cad_data.get_data(prefixed=True)
@@ -57,35 +42,13 @@ if st.button("Alle Daten laden", type="primary"):
         npa_data = NPALoader(file=npa, title="NPA")
         df_npa = npa_data.get_data(prefixed=True)
 
-        bst_data = BSTLoader(file=bst, title="BST")
-        df_bst = bst_data.get_data(prefixed=True)
-
-        flt_data = FLTLoader(file=flt, title="FLT")
-        df_flt = flt_data.get_data(prefixed=True)
-
-        hm_data = HMLoader(file=hm, title="HM")
-        df_hm = hm_data.get_data(prefixed=True)
-
-        fm_data = FMLoader()
-        df_fm = fm_data.get_data(prefixed=True)
-
-        l = [df_cad, df_npa, df_bst, df_flt, df_hm, df_fm]
+        l = [df_cad, df_npa]
 
 # MERGING
 # -----------------------------------------------------------------------------------
 
         merger = FileMerger(files=l, how="left", column="merge")
         merge, elimination_info = merger.get_data_merge(eliminate=True)
-
-# NPA AND FM Merging
-# -----------------------------------------------------------------------------------
-
-        npa_fm_merge = pandas_merge(
-            left=df_npa.loc[df_npa["npa_fm_match"].notna()],
-            right=df_fm.loc[df_fm["npa_fm_match"].notna()],
-            on="npa_fm_match",
-            how="inner"
-        )
 
 # DOWNLOAD
 # -----------------------------------------------------------------------------------
@@ -99,17 +62,13 @@ if st.button("Alle Daten laden", type="primary"):
             output = clean_merge(merge)
             output.to_excel(writer, sheet_name='Merge Klein')
 
-            dp_cad = calculate_duplicate_info(df_cad, df_npa, df_bst, df_flt, df_hm, elimination_info)
+            dp_cad = calculate_duplicate_info(df_cad, df_npa, elimination_info)
             dp_cad.to_excel(writer, sheet_name=f"AKS-Duplikate")
 
             cad_only = find_cad_only(merge)
             cad_only.to_excel(writer, sheet_name="Nur-CAD AKS-Nummern")
 
-            npa_fm_merge.to_excel(writer, sheet_name="NPA-FM-Merge SchlossNr")
-
-            # CAD duplicates are written to a separate sheet
-
-            for i, dataset in enumerate([df_npa, df_bst, df_flt, df_hm, df_fm]):
+            for i, dataset in enumerate([df_npa]):
 
                     name = dataset.columns[0].split("___")[0]+"-File"
                     fm = FileMerger(files=[df_cad, dataset], how="inner")
@@ -127,10 +86,8 @@ if st.button("Alle Daten laden", type="primary"):
                         nm = fm.find_non_matching_rows()
                         nm.to_excel(writer, sheet_name=f"{name} ohne AKS-Match")
 
-                    # TODO Dev: wir würden einen Reiter mit allen Türen der importierten HM Liste benötigen (Haltemagnet Import)
                     if i == 3:
                         dataset.to_excel(writer, sheet_name="Haltemagnet Import")
-
 
         st.download_button(
             label="Zusammengeführte Daten als Excel herunterladen",

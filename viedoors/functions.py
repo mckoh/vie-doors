@@ -3,14 +3,14 @@ from pandas import isna
 from math import prod
 
 
-def calculate_duplicate_info(df_cad, df_npa, df_bst, df_flt, df_hm, elimination_info):
+def calculate_duplicate_info(df_cad, df_npa, elimination_info):
 
-    l = [df_cad, df_npa, df_bst, df_flt, df_hm]
+    l = [df_cad, df_npa]
 
     dp_cad = count_duplicates(df_cad)
     dp_cad.rename(columns={"Anzahl Duplikate": f"Anzahl Duplikate CAD-File"}, inplace=True)
 
-    for i, dataset in enumerate([df_npa, df_bst, df_flt, df_hm]):
+    for i, dataset in enumerate([df_npa]):
 
         name = dataset.columns[0].split("___")[0]+"-File"
         dp = count_duplicates(dataset)
@@ -24,10 +24,7 @@ def calculate_duplicate_info(df_cad, df_npa, df_bst, df_flt, df_hm, elimination_
     # FILL THE EMPTY CELLS
     c = [
         "Anzahl Duplikate CAD-File",
-        "Anzahl Duplikate NPA-File",
-        "Anzahl Duplikate BST-File",
-        "Anzahl Duplikate FLT-File",
-        "Anzahl Duplikate HM-File"
+        "Anzahl Duplikate NPA-File"
     ]
 
     for i, column in enumerate(c):

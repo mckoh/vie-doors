@@ -10,7 +10,6 @@ from pandas import concat, DataFrame, notna
 REDUCED_COLS = [
     "NPA___feuerwider-stand",
     "NPA___flucht__ja_nein",
-    "HM___uz_6_steu", # (Wenn in der Zelle ein Inhalt ist, dann soll ein Ja angezeigt sein)
     "NPA___nottaster__ja_nein",
     "CAD___integration_aks",
     "NPA___fluegel__1_2_3",
@@ -101,28 +100,25 @@ def clean_merge(merge):
     :rtype: pandas.DataFrame
     """
 
-    merge["HM___uz_6_steu"] = merge["HM___uz_6_steu"].map(
-        lambda x: "Ja" if notna(x) else ""
-    )
-
     output = merge[REDUCED_COLS].copy()
     output["Selbsschließend"] = ""
 
     clean_column_names = [
-        "Feuerwiderstand",
-        "Fluchttüre Ja/Nein",
-        "UZ6/Steu. Ja/Nein",
-        "Nottaster Ja/Nein",
-        "AKS Nummer",
-        "Anzahl Flügel 1/2/S",
-        "SZ-Magnet Ja/Nein",
-        "Türnummer Alt", # in iteration 08 hinzugefügt
-        "Selbstschließend",
+        "Feuerwiderstand",      #0
+        "Fluchttüre Ja/Nein",   #1
+        "Nottaster Ja/Nein",    #2
+        "AKS Nummer",           #3
+        "Anzahl Flügel 1/2/S",  #4
+        "SZ-Magnet Ja/Nein",    #5
+        "Türnummer Alt",        #6
+        "Selbstschließend",     #7
     ]
 
     output.columns = clean_column_names
 
-    return output.iloc[:, [4, 0, 1, 2, 3, 7, 5, 6]]
+    output["UZ6/Steu. Ja/Nein"] = None
+
+    return output.iloc[:, [3, 0, 1, 8, 2, 6, 4, 5]]
 
 
 def find_cad_only(merge):
